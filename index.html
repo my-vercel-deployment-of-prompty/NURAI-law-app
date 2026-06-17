@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المساعد القانوني الذكي | AI Legal Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header glass-panel">
+            <div class="brand">
+                <div class="logo">⚖️</div>
+                <h1 id="app-title">المساعد القانوني الذكي</h1>
+            </div>
+            <div class="header-actions">
+                <button id="lang-toggle" class="btn-secondary">English</button>
+                <div class="connection-status">
+                    <span class="status-dot online"></span>
+                    <span id="status-text" class="status-text">متصل</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar glass-panel">
+                <div class="sidebar-section">
+                    <button id="start-intake-btn" class="btn-primary full-width">بدء استشارة / معالج</button>
+                </div>
+                
+                <div class="sidebar-section upload-section">
+                    <h3 id="docs-title">المستندات</h3>
+                    <div id="drop-zone" class="drop-zone glass-card">
+                        <p id="drop-text">اسحب وأفلت ملف PDF/TXT أو انقر للرفع</p>
+                        <input type="file" id="file-input" accept=".pdf,.txt" hidden>
+                    </div>
+                    <div id="file-list" class="file-list"></div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 id="stats-title">إحصائيات الجلسة</h3>
+                    <div class="stat-box glass-card">
+                        <span id="msgs-label">الأسئلة المطروحة:</span> 
+                        <span id="stat-msgs" class="gold-text">0</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-footer">
+                    <div class="disclaimer glass-card">
+                        <p>⚠️ <strong id="disclaimer-title">تنبيه:</strong> <span id="disclaimer-text">هذا المساعد لأغراض معلوماتية فقط ولا يعتبر استشارة قانونية ملزمة.</span></p>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Chat Area -->
+            <main class="chat-area">
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state">
+                    <div class="empty-state-content glass-card">
+                        <h2 id="empty-title">كيف يمكنني مساعدتك اليوم؟</h2>
+                        <p id="empty-sub">يمكنني تحليل المستندات القانونية، صياغة الردود، أو الإجابة على الاستفسارات.</p>
+                        <div class="suggestions">
+                            <button class="suggestion-chip">لخص المستند المرفق</button>
+                            <button class="suggestion-chip">ما هي حقوقي كمستأجر؟</button>
+                            <button class="suggestion-chip">صياغة اتفاقية عدم إفشاء</button>
+                            <button class="suggestion-chip">شرح الإخلال بالعقد</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Thread -->
+                <div id="chat-thread" class="chat-thread hidden">
+                    <!-- Messages injected here -->
+                </div>
+
+                <!-- Intake Wizard (Hidden by default) -->
+                <div id="intake-wizard" class="wizard-card hidden glass-card">
+                    <div class="wizard-header">
+                        <h3 id="wizard-title">المستشار القانوني المبدئي</h3>
+                        <button id="close-wizard" class="btn-icon">✕</button>
+                    </div>
+                    <div class="wizard-progress">
+                        <div class="progress-bar"><div class="progress-fill" id="wizard-progress-fill"></div></div>
+                        <span id="wizard-step-text">الخطوة 1 من 3</span>
+                    </div>
+                    <div class="wizard-body">
+                        <!-- Step 1 -->
+                        <div class="wizard-step active" id="step-1">
+                            <h4 id="wizard-step1-title">اختر صفتك</h4>
+                            <select id="wizard-role" class="input-field glass-input">
+                                <option value="" id="wizard-role-opt0">-- اختر الصفة --</option>
+                                <option value="Complainant" id="wizard-role-opt1">الشاكي / المدعي</option>
+                                <option value="Respondent" id="wizard-role-opt2">المدعى عليه</option>
+                                <option value="Witness" id="wizard-role-opt3">شاهد</option>
+                            </select>
+                        </div>
+                        <!-- Step 2 -->
+                        <div class="wizard-step" id="step-2">
+                            <h4 id="wizard-step2-title">تفاصيل الواقعة</h4>
+                            <textarea id="wizard-details" class="input-field glass-input" placeholder="صف ما حدث بالتفصيل..."></textarea>
+                        </div>
+                        <!-- Step 3 -->
+                        <div class="wizard-step" id="step-3">
+                            <h4 id="wizard-step3-title">النتيجة المرجوة</h4>
+                            <textarea id="wizard-outcome" class="input-field glass-input" placeholder="ما الذي تسعى لتحقيقه؟"></textarea>
+                        </div>
+                    </div>
+                    <div class="wizard-footer">
+                        <button id="wizard-back" class="btn-secondary hidden">السابق</button>
+                        <button id="wizard-next" class="btn-primary">التالي</button>
+                        <button id="wizard-submit" class="btn-primary hidden">إرسال الاستشارة</button>
+                    </div>
+                </div>
+
+                <!-- Composer -->
+                <div class="composer-area glass-panel">
+                    <div class="composer-container glass-input-container">
+                        <textarea id="message-input" rows="1" placeholder="اكتب سؤالك هنا... (Shift+Enter لسطر جديد)"></textarea>
+                        <button id="send-btn" class="btn-send" disabled>
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" class="send-icon">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Sources Panel -->
+            <aside id="sources-panel" class="sources-panel hidden glass-panel">
+                <div class="sources-header">
+                    <h3 id="sources-title">المصادر المرجعية</h3>
+                    <button id="close-sources" class="btn-icon">✕</button>
+                </div>
+                <div id="sources-content" class="sources-content">
+                    <!-- Sources injected here -->
+                </div>
+            </aside>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
