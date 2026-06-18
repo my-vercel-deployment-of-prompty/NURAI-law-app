@@ -4,7 +4,12 @@
  * This version contains a single, consistent implementation.
  */
 
-const WEBHOOK_URL = 'http://localhost:5678/webhook/affc9aac-955a-4858-a671-006aed3be42a';
+// Use a publicly reachable backend URL on Vercel. Example:
+// const WEBHOOK_URL = 'https://YOUR_BACKEND_DOMAIN/webhook/affc9aac-955a-4858-a671-006aed3be42a';
+// If you deployed a Vercel proxy route, point to it instead:
+// const WEBHOOK_URL = 'https://nurai-law-app.vercel.app/api/webhook/affc9aac-955a-4858-a671-006aed3be42a';
+const WEBHOOK_URL = '';
+
 
 const i18n = {
   ar: {
