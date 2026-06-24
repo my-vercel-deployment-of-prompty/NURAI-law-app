@@ -115,6 +115,29 @@ const i18n = {
 const htmlRoot = document.getElementById('html-root');
 const langToggleBtn = document.getElementById('lang-toggle');
 
+// Hamburger menu
+const hamburgerBtn = document.getElementById('hamburger-btn');
+const sidebar = document.querySelector('.sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+function toggleSidebar() {
+  const isOpen = sidebar.classList.toggle('open');
+  hamburgerBtn.classList.toggle('active', isOpen);
+  sidebarOverlay.classList.toggle('active', isOpen);
+  // Prevent body scroll when sidebar open
+  document.body.style.overflow = isOpen ? 'hidden' : '';
+}
+
+function closeSidebar() {
+  sidebar.classList.remove('open');
+  hamburgerBtn.classList.remove('active');
+  sidebarOverlay.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+hamburgerBtn.addEventListener('click', toggleSidebar);
+sidebarOverlay.addEventListener('click', closeSidebar);
+
 const messageInput = document.getElementById('message-input');
 const sendBtn = document.getElementById('send-btn');
 const chatThread = document.getElementById('chat-thread');
@@ -962,6 +985,7 @@ wizardBackBtn.addEventListener('click', () => {
 wizardSubmitBtn.addEventListener('click', submitWizard);
 
 function startWizard() {
+  closeSidebar();
   emptyState.classList.add('hidden');
   chatThread.classList.remove('hidden');
   wizardCard.classList.remove('hidden');

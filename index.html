@@ -11,9 +11,14 @@
     <div class="app-container">
         <!-- Header -->
         <header class="app-header glass-panel">
-            <div class="brand">
-                <div class="logo">⚖️</div>
-                <h1 id="app-title">المساعد القانوني الذكي</h1>
+            <div class="header-start">
+                <button id="hamburger-btn" class="btn-hamburger" aria-label="Toggle menu">
+                    <span class="hamburger-icon"></span>
+                </button>
+                <div class="brand">
+                    <div class="logo">⚖️</div>
+                    <h1 id="app-title">المساعد القانوني الذكي</h1>
+                </div>
             </div>
             <div class="header-actions">
                 <button id="lang-toggle" class="btn-secondary">English</button>
@@ -24,6 +29,7 @@
             </div>
         </header>
 
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
         <div class="main-content">
             <!-- Sidebar -->
             <aside class="sidebar glass-panel">
