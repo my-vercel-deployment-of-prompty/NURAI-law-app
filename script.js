@@ -30,7 +30,16 @@ const i18n = {
     disclaimerText: "هذا المساعد لأغراض معلوماتية فقط ولا يعتبر استشارة قانونية ملزمة.",
     emptyTitle: "كيف يمكنني مساعدتك اليوم؟",
     emptySub: "يمكنني تحليل المستندات القانونية، صياغة الردود، أو الإجابة على الاستفسارات.",
-    suggestions: ["لخص المستند المرفق", "ما هي حقوقي كمستأجر؟", "صياغة اتفاقية عدم إفشاء", "شرح الإخلال بالعقد"],
+    suggestions: [
+      "ما هي شروط صحة عقد الزواج في القانون العراقي؟",
+      "هل يجوز تعدد الزوجات في القانون العراقي وما هي ضوابطه؟",
+      "ما هي حقوق الزوجة بعد عقد الزواج؟",
+      "ما هي الإجراءات القانونية لفسخ عقد الزواج؟",
+      "ما هي أركان الوصية الصحيحة؟",
+      "من هم المستحقون للميراث في القانون العراقي؟",
+      "هل يمكن للشخص أن يوصي بأكثر من ثلث تركته؟",
+      "ما هي شروط أهلية الموصي والموصى له؟"
+    ],
 
     wizardTitle: "المستشار القانوني المبدئي",
     wizardStep1Title: "اختر صفتك",
@@ -184,6 +193,29 @@ function extractAnswer(data) {
 }
 
 // --- i18n ---
+let suggestionSetStartIndex = -4; // so first render picks a random set of 4
+
+function renderSuggestionChips() {
+  const t = i18n[currentLang];
+  const chips = document.querySelectorAll('.suggestion-chip');
+  const setSize = chips.length; // should be 4
+
+  // Show a random 4-set every page refresh.
+  const all = (t.suggestions || []).filter(Boolean);
+  if (suggestionSetStartIndex < 0) {
+    // choose a set start aligned to 4
+    const maxStart = Math.max(0, all.length - chips.length);
+    const sets = Math.floor(maxStart / chips.length) + 1;
+    const randomSet = Math.floor(Math.random() * sets);
+    suggestionSetStartIndex = randomSet * chips.length;
+  }
+
+  for (let i = 0; i < chips.length; i++) {
+    const idx = suggestionSetStartIndex + i;
+    chips[i].textContent = t.suggestions[idx] ?? '';
+  }
+}
+
 function applyTranslations(lang) {
   const t = i18n[lang];
 
@@ -202,8 +234,9 @@ function applyTranslations(lang) {
   document.getElementById('empty-title').textContent = t.emptyTitle;
   document.getElementById('empty-sub').textContent = t.emptySub;
 
-  const chips = document.querySelectorAll('.suggestion-chip');
-  chips.forEach((chip, i) => chip.textContent = t.suggestions[i]);
+  // Don’t render all suggestions at once; render 4 at a time (dynamic set)
+  renderSuggestionChips();
+
 
   document.getElementById('wizard-title').textContent = t.wizardTitle;
   document.getElementById('wizard-step1-title').textContent = t.wizardStep1Title;
@@ -243,6 +276,15 @@ document.querySelectorAll('.suggestion-chip').forEach(chip => {
   chip.addEventListener('click', () => {
     messageInput.value = chip.textContent;
     messageInput.dispatchEvent(new Event('input'));
+
+    // move to next set of 4 after each click
+    suggestionSetStartIndex += 4;
+    const t = i18n[currentLang];
+    if (suggestionSetStartIndex >= (t.suggestions?.length || 0)) {
+      suggestionSetStartIndex = 0;
+    }
+    renderSuggestionChips();
+
     handleSend();
   });
 });

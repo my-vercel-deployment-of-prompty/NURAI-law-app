@@ -140,15 +140,6 @@ body {
     padding: 16px 20px; border-radius: var(--radius-lg); line-height: 1.6; font-size: 0.95rem;
     box-shadow: var(--shadow-glass); white-space: pre-wrap; word-wrap: break-word;
 }
-
-/* Assistant bold/title styling inserted from AI formatting */
-.ai-strong {
-    font-weight: 700;
-    font-size: 1.06rem;
-    display: inline-block;
-    margin: 2px 0 6px 0;
-    color: inherit;
-}
 .user .bubble {
     background: rgba(255,255,255,0.1); border: 1px solid var(--border-glass);
 }
@@ -266,6 +257,110 @@ textarea.input-field { min-height: 120px; resize: vertical; }
 .hidden { display: none !important; }
 
 .toggle-sources-btn { margin-top: 16px; font-size: 0.85rem; padding: 8px 16px; display: inline-flex; align-items: center; gap: 8px;}
+
+/* Responsive (mobile first) */
+@media (max-width: 900px) {
+    body {
+        height: 100dvh;
+        overflow: hidden;
+    }
+
+    .main-content {
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .sidebar {
+        width: 100%;
+        border-inline-end: none;
+        border-bottom: 1px solid var(--border-glass);
+        padding: 16px;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .sources-panel {
+        width: 100%;
+        border-inline-start: none;
+        border-top: 1px solid var(--border-glass);
+    }
+
+    .chat-area {
+        flex: 1;
+    }
+
+    /* Ensure bubbles don't overflow */
+    .message {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .bubble {
+        font-size: 0.95rem;
+        padding: 14px 16px;
+    }
+
+    .chat-thread {
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .composer-area {
+        padding: 12px;
+    }
+
+    .composer-container {
+        width: 100%;
+        padding: 10px 14px;
+    }
+
+    .btn-send {
+        width: 42px;
+        height: 42px;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-header {
+        padding: 0 12px;
+        height: 60px;
+    }
+
+    .brand h1 { font-size: 1.05rem; }
+
+    .header-actions {
+        gap: 12px;
+    }
+
+    .main-content {
+        gap: 0;
+    }
+
+    .sidebar {
+        padding: 14px;
+    }
+
+    .empty-state { padding: 20px; }
+    .empty-state-content { padding: 22px; }
+
+    .wizard-body { padding: 16px; }
+    .wizard-footer { padding: 16px; }
+
+    .chat-thread {
+        padding: 12px;
+    }
+
+    .composer-area {
+        padding: 10px;
+    }
+
+    .wizard-card {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-radius: 0;
+    }
+}
 
 /* Interactive Elements */
 .interactive-container {
