@@ -13,7 +13,7 @@
 // const WEBHOOK_URL = 'https://YOUR_BACKEND_DOMAIN/webhook/affc9aac-955a-4858-a671-006aed3be42a';
 // Example (Vercel proxy route):
 // const WEBHOOK_URL = 'https://nurai-law-app.vercel.app/api/webhook/affc9aac-955a-4858-a671-006aed3be42a';
-const WEBHOOK_URL = 'http://136.119.161.253:5678/webhook/affc9aac-955a-4858-a671-006aed3be42a';
+const WEBHOOK_URL = "https://careers-version-hospitality-companies.trycloudflare.com/webhook/affc9aac-955a-4858-a671-006aed3be42a";
 
 
 
