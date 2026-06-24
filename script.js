@@ -8,7 +8,13 @@
 // const WEBHOOK_URL = 'https://YOUR_BACKEND_DOMAIN/webhook/affc9aac-955a-4858-a671-006aed3be42a';
 // If you deployed a Vercel proxy route, point to it instead:
 // const WEBHOOK_URL = 'https://nurai-law-app.vercel.app/api/webhook/affc9aac-955a-4858-a671-006aed3be42a';
-const WEBHOOK_URL = '';
+// TODO: Replace with your real backend/webhook URL.
+// Example (direct webhook):
+// const WEBHOOK_URL = 'https://YOUR_BACKEND_DOMAIN/webhook/affc9aac-955a-4858-a671-006aed3be42a';
+// Example (Vercel proxy route):
+// const WEBHOOK_URL = 'https://nurai-law-app.vercel.app/api/webhook/affc9aac-955a-4858-a671-006aed3be42a';
+const WEBHOOK_URL = 'http://136.119.161.253:5678/webhook/affc9aac-955a-4858-a671-006aed3be42a';
+
 
 
 const i18n = {
