@@ -22,6 +22,7 @@ const i18n = {
     appTitle: "المساعد القانوني الذكي",
     statusText: "متصل",
     startIntake: "بدء استشارة / معالج",
+    clearChat: "مسح المحادثة / جديد",
     docsTitle: "المستندات",
     dropText: "اسحب وأفلت ملف PDF/TXT أو انقر للرفع",
     statsTitle: "إحصائيات الجلسة",
@@ -66,12 +67,30 @@ const i18n = {
     emptyResponse: "تمت معالجة الطلب ولكن لم يتم استلام نص للإجابة.",
 
     intakeReportTitle: "تقرير تقييم الاستشارة:\n\n",
-    submittedIntake: (r, d, o) => `نموذج استشارة مرسل:\nالصفة: ${r}\nالتفاصيل: ${d}\nالنتيجة المرجوة: ${o}`
+    submittedIntake: (r, d, o) => `نموذج استشارة مرسل:\nالصفة: ${r}\nالتفاصيل: ${d}\nالنتيجة المرجوة: ${o}`,
+    
+    // Tutorial Translation Keys
+    tutorialLangTitle: "اختر لغتك المفضلة / Select Language",
+    tutorialLangSub: "يرجى تحديد لغة العرض للمساعد القانوني والتوجيه التعليمي / Please select your preferred language",
+    tutorialWelcomeTitle: "مرحباً بك في مساعدك القانوني",
+    tutorialWelcomeDesc: "نحن فريق Aether، نقدم لك منصة NURARI لتبسيط الإجراءات القانونية، صياغة وتحليل العقود، وتسهيل الفهم القانوني للجميع.",
+    tutorialProblemTitle: "التحديات العقيمة في المجال القانوني",
+    tutorialProblemDesc: "نعالج أهم العقبات القانونية التي يواجهها المجتمع اليوم:<br>• التكلفة الباهظة للاستشارات القانونية.<br>• شح وصعوبة الوصول للبيانات القانونية الموثوقة.<br>• المخاطر والثغرات التي يقع فيها الأجانب وغير الناطقين بالعربية.",
+    tutorialTourTitle: "جولة سريعة في المنصة",
+    tutorialTourIntake: "معالج الاستشارة: ابدأ استشارة قانونية مهيكلة بخطوات بسيطة.",
+    tutorialTourUpload: "تحميل المستندات: ارفع ملفات PDF أو TXT لتدقيقها وتحليلها.",
+    tutorialTourComposer: "حقل المحادثة: اسأل أي سؤال قانوني وتلقى إجابات ذكية.",
+    tutorialTourLang: "تغيير اللغة: يمكنك التبديل بين العربية والإنجليزية في أي وقت.",
+    tutorialBtnNext: "التالي",
+    tutorialBtnBack: "السابق",
+    tutorialBtnSkip: "تخطي الجولة",
+    tutorialBtnDone: "ابدأ الآن"
   },
   en: {
     appTitle: "AI Legal Assistant",
     statusText: "Connected",
     startIntake: "Start Intake / Advisor",
+    clearChat: "Clear Chat / New",
     docsTitle: "Documents",
     dropText: "Drag & drop PDF/TXT or click to upload",
     statsTitle: "Session Stats",
@@ -107,7 +126,24 @@ const i18n = {
     emptyResponse: "Request processed but no text response received.",
 
     intakeReportTitle: "Intake Evaluation Report:\n\n",
-    submittedIntake: (r, d, o) => `Submitted Intake Form:\nRole: ${r}\nDetails: ${d}\nOutcome: ${o}`
+    submittedIntake: (r, d, o) => `Submitted Intake Form:\nRole: ${r}\nDetails: ${d}\nOutcome: ${o}`,
+
+    // Tutorial Translation Keys
+    tutorialLangTitle: "Select Language / اختر لغتك المفضلة",
+    tutorialLangSub: "Please select your preferred language / يرجى تحديد لغة العرض",
+    tutorialWelcomeTitle: "Welcome to NURARI",
+    tutorialWelcomeDesc: "We are Team Aether. We bring you NURARI, an AI-powered assistant designed to simplify legal procedures, analyze contracts, and make legal understanding accessible to everyone.",
+    tutorialProblemTitle: "Critical Legal Challenges We Solve",
+    tutorialProblemDesc: "We address the most prominent legal obstacles in today's society:<br>• Skyrocketing costs of professional legal consultation.<br>• Severe lack of structured and open legal data.<br>• High legal risks for foreigners and non-Arabic speakers.",
+    tutorialTourTitle: "Quick Platform Tour",
+    tutorialTourIntake: "Intake Wizard: Initiate a structured legal intake session in easy steps.",
+    tutorialTourUpload: "Document Upload: Drop PDF or TXT files here to analyze and extract information.",
+    tutorialTourComposer: "Chat Composer: Ask any legal question and receive smart, instant guidance.",
+    tutorialTourLang: "Language Toggle: Switch between English and Arabic at any point.",
+    tutorialBtnNext: "Next",
+    tutorialBtnBack: "Back",
+    tutorialBtnSkip: "Skip Tour",
+    tutorialBtnDone: "Get Started"
   }
 };
 
@@ -153,6 +189,7 @@ const fileInput = document.getElementById('file-input');
 const fileList = document.getElementById('file-list');
 
 const startIntakeBtn = document.getElementById('start-intake-btn');
+const clearChatBtn = document.getElementById('clear-chat-btn');
 const wizardCard = document.getElementById('intake-wizard');
 const closeWizardBtn = document.getElementById('close-wizard');
 const wizardSteps = [
@@ -176,6 +213,7 @@ let currentWizardStep = 0;
 let uploadedFile = null;
 let currentSources = [];
 let currentLang = 'ar';
+let chatHistory = []; // Array of { role: 'user'|'assistant', text: string, sources: Array, isIntakeReport: boolean }
 
 // --- Utils ---
 function escapeHTML(str) {
@@ -247,6 +285,7 @@ function applyTranslations(lang) {
   langToggleBtn.textContent = t.langBtn ?? (lang === 'ar' ? 'English' : 'عربي');
 
   document.getElementById('start-intake-btn').textContent = t.startIntake;
+  document.getElementById('clear-chat-btn').textContent = t.clearChat;
   document.getElementById('docs-title').textContent = t.docsTitle;
   document.getElementById('drop-text').textContent = t.dropText;
   document.getElementById('stats-title').textContent = t.statsTitle;
@@ -358,6 +397,7 @@ function handleFile(file) {
 
   renderFileList();
   fileInput.value = '';
+  saveChatToLocalStorage();
 }
 
 function renderFileList() {
@@ -376,6 +416,7 @@ function renderFileList() {
 window.removeFile = function () {
   uploadedFile = null;
   renderFileList();
+  saveChatToLocalStorage();
 };
 
 // --- Sources panel ---
@@ -383,7 +424,7 @@ closeSourcesBtn.addEventListener('click', () => {
   sourcesPanel.classList.add('hidden');
 });
 
-function addSourcesToggle(msgId) {
+function addSourcesToggle(msgId, sources = currentSources) {
   const bubble = document.getElementById(msgId)?.querySelector('.bubble');
   if (!bubble) return;
 
@@ -391,7 +432,7 @@ function addSourcesToggle(msgId) {
   toggleBtn.type = 'button';
   toggleBtn.className = 'btn-secondary toggle-sources-btn';
   toggleBtn.textContent = `📚 ${i18n[currentLang].viewSources}`;
-  toggleBtn.onclick = () => renderSourcesPanel(currentSources);
+  toggleBtn.onclick = () => renderSourcesPanel(sources);
   bubble.appendChild(toggleBtn);
 }
 
@@ -665,8 +706,12 @@ function renderAssistantContent(rawText, parentBubble) {
 }
 
 
-function renderUserMessage(text) {
-  updateMessageCount();
+function renderUserMessage(text, shouldSave = true) {
+  if (shouldSave) {
+    updateMessageCount();
+    chatHistory.push({ role: 'user', text });
+    saveChatToLocalStorage();
+  }
   const id = 'msg-' + Date.now();
 
   const msgDiv = document.createElement('div');
@@ -681,8 +726,12 @@ function renderUserMessage(text) {
   return id;
 }
 
-function renderAssistantMessage(text) {
-  updateMessageCount();
+function renderAssistantMessage(text, shouldSave = true, sources = null) {
+  if (shouldSave) {
+    updateMessageCount();
+    chatHistory.push({ role: 'assistant', text, sources });
+    saveChatToLocalStorage();
+  }
   const id = 'msg-' + Date.now();
 
   const msgDiv = document.createElement('div');
@@ -816,14 +865,14 @@ async function submitActiveInteractiveForm() {
 
     if (typeof responseData === 'object') {
       const answerText = extractAnswer(responseData);
-      const msgId = renderAssistantMessage(answerText);
+      const msgId = renderAssistantMessage(answerText, true, responseData.sources || null);
 
       if (responseData.sources?.length) {
         currentSources = responseData.sources;
         addSourcesToggle(msgId);
       }
     } else {
-      renderAssistantMessage(responseData);
+      renderAssistantMessage(responseData, true);
     }
   } catch (err) {
     document.getElementById(loadingId)?.remove();
@@ -870,7 +919,7 @@ async function handleSend() {
 
       if (typeof responseData === 'object') {
         const answerText = extractAnswer(responseData);
-        const msgId = renderAssistantMessage(answerText);
+        const msgId = renderAssistantMessage(answerText, true, responseData.sources || null);
 
         // If assistant response contains interactive markers, activate again
         // (done in renderAssistantContent)
@@ -879,7 +928,7 @@ async function handleSend() {
           addSourcesToggle(msgId);
         }
       } else {
-        renderAssistantMessage(responseData);
+        renderAssistantMessage(responseData, true);
       }
     } catch (err) {
       document.getElementById(loadingId)?.remove();
@@ -931,7 +980,7 @@ async function handleSend() {
 
       document.getElementById(loadingId)?.remove();
       const answerText = extractAnswer(demoResponse);
-      const msgId = renderAssistantMessage(answerText);
+      const msgId = renderAssistantMessage(answerText, true, demoResponse.sources || null);
 
       if (demoResponse.sources?.length) {
         currentSources = demoResponse.sources;
@@ -946,14 +995,14 @@ async function handleSend() {
 
     if (typeof responseData === 'object') {
       const answerText = extractAnswer(responseData);
-      const msgId = renderAssistantMessage(answerText);
+      const msgId = renderAssistantMessage(answerText, true, responseData.sources || null);
 
       if (responseData.sources?.length) {
         currentSources = responseData.sources;
         addSourcesToggle(msgId);
       }
     } else {
-      renderAssistantMessage(responseData);
+      renderAssistantMessage(responseData, true);
     }
 
   } catch (err) {
@@ -1064,9 +1113,9 @@ async function submitWizard() {
 
     if (typeof responseData === 'object') {
       const answerText = extractAnswer(responseData);
-      renderAssistantMessage(i18n[currentLang].intakeReportTitle + answerText);
+      renderAssistantMessage(i18n[currentLang].intakeReportTitle + answerText, true, responseData.sources || null);
     } else {
-      renderAssistantMessage(i18n[currentLang].intakeReportTitle + responseData);
+      renderAssistantMessage(i18n[currentLang].intakeReportTitle + responseData, true);
     }
 
   } catch (err) {
@@ -1078,8 +1127,485 @@ async function submitWizard() {
   }
 }
 
+// Local Storage Functions
+function saveChatToLocalStorage() {
+  try {
+    const data = {
+      chatHistory,
+      messageCount,
+      uploadedFile,
+      currentLang
+    };
+    localStorage.setItem('nurai_legal_assistant_session', JSON.stringify(data));
+  } catch (e) {
+    console.error('Failed to save session to localStorage', e);
+  }
+}
+
+function loadChatFromLocalStorage() {
+  try {
+    const serialized = localStorage.getItem('nurai_legal_assistant_session');
+    if (!serialized) return;
+
+    const data = JSON.parse(serialized);
+    if (!data) return;
+
+    if (data.currentLang) {
+      currentLang = data.currentLang;
+      htmlRoot.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
+      htmlRoot.setAttribute('lang', currentLang);
+    }
+
+    if (data.uploadedFile) {
+      uploadedFile = data.uploadedFile;
+      renderFileList();
+    }
+
+    if (typeof data.messageCount === 'number') {
+      messageCount = data.messageCount;
+      statMsgs.textContent = messageCount;
+    }
+
+    if (Array.isArray(data.chatHistory) && data.chatHistory.length > 0) {
+      emptyState.classList.add('hidden');
+      chatThread.classList.remove('hidden');
+      chatHistory = data.chatHistory;
+
+      data.chatHistory.forEach(msg => {
+        if (msg.role === 'user') {
+          renderUserMessage(msg.text, false);
+        } else {
+          const msgId = renderAssistantMessage(msg.text, false);
+          if (msg.sources && msg.sources.length > 0) {
+            addSourcesToggle(msgId, msg.sources);
+          }
+        }
+      });
+      scrollToBottom();
+    }
+  } catch (e) {
+    console.error('Failed to load session from localStorage', e);
+  }
+}
+
+clearChatBtn.addEventListener('click', () => {
+  const confirmMsg = currentLang === 'ar' 
+    ? 'هل أنت متأكد من مسح المحادثة بالكامل؟' 
+    : 'Are you sure you want to clear the entire chat history?';
+    
+  if (confirm(confirmMsg)) {
+    localStorage.removeItem('nurai_legal_assistant_session');
+    chatHistory = [];
+    messageCount = 0;
+    statMsgs.textContent = '0';
+    uploadedFile = null;
+    renderFileList();
+    
+    chatThread.innerHTML = '';
+    chatThread.classList.add('hidden');
+    emptyState.classList.remove('hidden');
+    wizardCard.classList.add('hidden');
+  }
+});
+
+// ==========================================================================
+// Interactive Onboarding Tutorial Manager (Team Aether)
+// ==========================================================================
+class OnboardingTutorialManager {
+  constructor() {
+    this.currentStep = 0;
+    this.overlay = document.getElementById('tutorial-overlay');
+    this.backdrop = document.getElementById('tutorial-backdrop');
+    this.spotlight = document.getElementById('tutorial-spotlight');
+    this.card = document.getElementById('tutorial-card');
+    this.content = document.getElementById('tutorial-content');
+    this.skipBtn = document.getElementById('tutorial-skip');
+    this.backBtn = document.getElementById('tutorial-back');
+    this.nextBtn = document.getElementById('tutorial-next');
+    this.closeBtn = document.getElementById('tutorial-close');
+    this.dotsContainer = document.getElementById('tutorial-dots');
+    
+    this.steps = [
+      {
+        type: 'language',
+        titleKey: 'tutorialLangTitle',
+        subKey: 'tutorialLangSub'
+      },
+      {
+        type: 'intro',
+        titleKey: 'tutorialWelcomeTitle',
+        descKey: 'tutorialWelcomeDesc',
+        icon: '⚖️'
+      },
+      {
+        type: 'problems',
+        titleKey: 'tutorialProblemTitle',
+        descKey: 'tutorialProblemDesc',
+        icon: '🚨'
+      },
+      {
+        type: 'spotlight',
+        targetId: 'start-intake-btn',
+        titleKey: 'wizardTitle',
+        descKey: 'tutorialTourIntake'
+      },
+      {
+        type: 'spotlight',
+        targetId: 'drop-zone',
+        titleKey: 'docsTitle',
+        descKey: 'tutorialTourUpload'
+      },
+      {
+        type: 'spotlight',
+        targetClass: 'composer-area',
+        titleKey: 'emptyTitle',
+        descKey: 'tutorialTourComposer'
+      },
+      {
+        type: 'spotlight',
+        targetId: 'lang-toggle',
+        titleKey: 'tutorialTourTitle',
+        descKey: 'tutorialTourLang'
+      }
+    ];
+
+    this.initEvents();
+  }
+
+  initEvents() {
+    this.nextBtn.addEventListener('click', () => this.next());
+    this.backBtn.addEventListener('click', () => this.back());
+    this.skipBtn.addEventListener('click', () => this.finish());
+    this.closeBtn.addEventListener('click', () => this.finish());
+    
+    // Recalculate spotlight and floating card positions on window resize/scroll
+    window.addEventListener('resize', () => {
+      if (this.overlay && !this.overlay.classList.contains('hidden')) {
+        this.updateLayout();
+      }
+    });
+
+    window.addEventListener('scroll', () => {
+      if (this.overlay && !this.overlay.classList.contains('hidden')) {
+        this.updateLayout();
+      }
+    });
+  }
+
+  start() {
+    // If user already visited, don't show
+    if (localStorage.getItem('nurai_tutorial_completed')) {
+      return;
+    }
+    
+    // Clear sidebar open states to prevent overlay bugs
+    closeSidebar();
+    
+    this.currentStep = 0;
+    this.overlay.classList.remove('hidden');
+    this.render();
+  }
+
+  render() {
+    const step = this.steps[this.currentStep];
+    const t = i18n[currentLang];
+
+    // Clear previous dynamic content
+    this.content.innerHTML = '';
+
+    // Step type: Language Selector
+    if (step.type === 'language') {
+      this.spotlight.classList.add('hidden');
+      this.card.classList.remove('floating');
+      this.card.removeAttribute('style');
+      
+      // Hide standard navigation buttons
+      this.skipBtn.style.display = 'none';
+      this.backBtn.style.display = 'none';
+      this.nextBtn.style.display = 'none';
+      this.dotsContainer.style.display = 'none';
+
+      const title = document.createElement('h3');
+      title.className = 'tutorial-title';
+      title.innerText = t.tutorialLangTitle || step.titleKey;
+
+      const desc = document.createElement('p');
+      desc.className = 'tutorial-desc';
+      desc.style.textAlign = 'center';
+      desc.innerText = t.tutorialLangSub || step.subKey;
+
+      const btnContainer = document.createElement('div');
+      btnContainer.className = 'tutorial-lang-container';
+
+      const btnAr = document.createElement('button');
+      btnAr.className = 'tutorial-lang-btn';
+      btnAr.innerText = 'العربية';
+      btnAr.addEventListener('click', () => {
+        currentLang = 'ar';
+        htmlRoot.setAttribute('dir', 'rtl');
+        htmlRoot.setAttribute('lang', 'ar');
+        applyTranslations('ar');
+        this.next();
+      });
+
+      const btnEn = document.createElement('button');
+      btnEn.className = 'tutorial-lang-btn';
+      btnEn.innerText = 'English';
+      btnEn.addEventListener('click', () => {
+        currentLang = 'en';
+        htmlRoot.setAttribute('dir', 'ltr');
+        htmlRoot.setAttribute('lang', 'en');
+        applyTranslations('en');
+        this.next();
+      });
+
+      btnContainer.appendChild(btnAr);
+      btnContainer.appendChild(btnEn);
+      
+      const brandIcon = document.createElement('div');
+      brandIcon.className = 'tutorial-brand-icon';
+      brandIcon.innerText = '⚖️';
+      
+      this.content.appendChild(brandIcon);
+      this.content.appendChild(title);
+      this.content.appendChild(desc);
+      this.content.appendChild(btnContainer);
+
+    } else if (step.type === 'intro') {
+      this.spotlight.classList.add('hidden');
+      this.card.classList.remove('floating');
+      this.card.removeAttribute('style');
+
+      this.skipBtn.style.display = 'block';
+      this.backBtn.style.display = 'none'; // No back to language step once decided
+      this.nextBtn.style.display = 'block';
+      this.dotsContainer.style.display = 'flex';
+
+      this.skipBtn.innerText = t.tutorialBtnSkip;
+      this.nextBtn.innerText = t.tutorialBtnNext;
+
+      const brandIcon = document.createElement('div');
+      brandIcon.className = 'tutorial-brand-icon';
+      brandIcon.innerText = step.icon;
+
+      const title = document.createElement('h3');
+      title.className = 'tutorial-title';
+      title.innerText = t[step.titleKey];
+
+      const desc = document.createElement('p');
+      desc.className = 'tutorial-desc';
+      desc.innerText = t[step.descKey];
+
+      this.content.appendChild(brandIcon);
+      this.content.appendChild(title);
+      this.content.appendChild(desc);
+
+    } else if (step.type === 'problems') {
+      this.spotlight.classList.add('hidden');
+      this.card.classList.remove('floating');
+      this.card.removeAttribute('style');
+
+      this.skipBtn.style.display = 'block';
+      this.backBtn.style.display = 'block';
+      this.nextBtn.style.display = 'block';
+      this.dotsContainer.style.display = 'flex';
+
+      this.skipBtn.innerText = t.tutorialBtnSkip;
+      this.backBtn.innerText = t.tutorialBtnBack;
+      this.nextBtn.innerText = t.tutorialBtnNext;
+
+      const title = document.createElement('h3');
+      title.className = 'tutorial-title';
+      title.innerText = t[step.titleKey];
+
+      const listContainer = document.createElement('div');
+      listContainer.className = 'tutorial-problems-list';
+
+      // Problems detail list
+      const problems = currentLang === 'ar' ? [
+        { icon: '💰', text: 'التكلفة الباهظة للاستشارات القانونية التقليدية التي تعوق الكثيرين.' },
+        { icon: '📊', text: 'شح البيانات وصعوبة الوصول إلى التشريعات والأحكام القانونية الموثوقة.' },
+        { icon: '🌍', text: 'المخاطر القانونية الكبيرة التي تواجه الأجانب وغير الناطقين بالعربية.' }
+      ] : [
+        { icon: '💰', text: 'Skyrocketing costs of professional legal consultation.' },
+        { icon: '📊', text: 'Severe lack of structured and easily accessible legal data.' },
+        { icon: '🌍', text: 'High legal risks for foreigners and non-Arabic speakers.' }
+      ];
+
+      problems.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'tutorial-problem-item';
+        
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'tutorial-problem-icon';
+        iconSpan.innerText = p.icon;
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'tutorial-problem-text';
+        textSpan.innerText = p.text;
+
+        item.appendChild(iconSpan);
+        item.appendChild(textSpan);
+        listContainer.appendChild(item);
+      });
+
+      const brandIcon = document.createElement('div');
+      brandIcon.className = 'tutorial-brand-icon';
+      brandIcon.innerText = step.icon;
+
+      this.content.appendChild(brandIcon);
+      this.content.appendChild(title);
+      this.content.appendChild(listContainer);
+
+    } else if (step.type === 'spotlight') {
+      this.skipBtn.style.display = 'block';
+      this.backBtn.style.display = 'block';
+      this.nextBtn.style.display = 'block';
+      this.dotsContainer.style.display = 'flex';
+
+      this.skipBtn.innerText = t.tutorialBtnSkip;
+      this.backBtn.innerText = t.tutorialBtnBack;
+      this.nextBtn.innerText = (this.currentStep === this.steps.length - 1) ? t.tutorialBtnDone : t.tutorialBtnNext;
+
+      const title = document.createElement('h3');
+      title.className = 'tutorial-title';
+      title.innerText = t[step.titleKey];
+
+      const desc = document.createElement('p');
+      desc.className = 'tutorial-desc';
+      desc.innerText = t[step.descKey];
+
+      this.content.appendChild(title);
+      this.content.appendChild(desc);
+
+      this.spotlight.classList.remove('hidden');
+      this.card.classList.add('floating');
+      
+      this.updateLayout();
+    }
+
+    this.renderDots();
+  }
+
+  renderDots() {
+    this.dotsContainer.innerHTML = '';
+    // Skip step 0 (language select) in the dot count
+    if (this.currentStep === 0) return;
+    
+    for (let i = 1; i < this.steps.length; i++) {
+      const dot = document.createElement('div');
+      dot.className = `tutorial-dot ${i === this.currentStep ? 'active' : ''}`;
+      this.dotsContainer.appendChild(dot);
+    }
+  }
+
+  updateLayout() {
+    if (this.currentStep === 0) return;
+    const step = this.steps[this.currentStep];
+    if (step.type !== 'spotlight') return;
+
+    let target = null;
+    if (step.targetId) {
+      target = document.getElementById(step.targetId);
+    } else if (step.targetClass) {
+      target = document.querySelector('.' + step.targetClass);
+    }
+
+    if (!target) {
+      // Fallback to center if element not found
+      this.spotlight.classList.add('hidden');
+      this.card.classList.remove('floating');
+      this.card.removeAttribute('style');
+      return;
+    }
+
+    // If sidebar is hidden (e.g. mobile) and target is inside it, make sure sidebar is temporarily open
+    const isSidebarTarget = target.closest('.sidebar');
+    if (isSidebarTarget && window.innerWidth <= 768) {
+      // Toggle sidebar open to show target
+      if (!sidebar.classList.contains('open')) {
+        toggleSidebar();
+      }
+    }
+
+    const rect = target.getBoundingClientRect();
+    const padding = 8;
+
+    // Set Spotlight Dimensions
+    this.spotlight.classList.remove('hidden');
+    this.spotlight.style.top = (rect.top + window.scrollY - padding) + 'px';
+    this.spotlight.style.left = (rect.left + window.scrollX - padding) + 'px';
+    this.spotlight.style.width = (rect.width + padding * 2) + 'px';
+    this.spotlight.style.height = (rect.height + padding * 2) + 'px';
+
+    // Position Card relative to target (Desktop)
+    if (window.innerWidth > 600) {
+      const cardWidth = 430;
+      this.card.style.width = cardWidth + 'px';
+      this.card.style.maxWidth = 'none';
+
+      // Decide whether to place it above, below, left, or right
+      let topVal = rect.bottom + window.scrollY + 16;
+      let leftVal = rect.left + window.scrollX + (rect.width - cardWidth) / 2;
+
+      // Keep it within screen boundaries
+      if (leftVal < 20) {
+        leftVal = 20;
+      } else if (leftVal + cardWidth > window.innerWidth - 20) {
+        leftVal = window.innerWidth - cardWidth - 20;
+      }
+
+      // If it overflows bottom, show it above target
+      const estimatedCardHeight = 220;
+      if (rect.bottom + estimatedCardHeight > window.innerHeight) {
+        topVal = rect.top + window.scrollY - estimatedCardHeight - 16;
+      }
+
+      this.card.style.top = topVal + 'px';
+      this.card.style.left = leftVal + 'px';
+    } else {
+      // Mobile - reset inline position to fall back to media query stylesheet rules
+      this.card.removeAttribute('style');
+    }
+  }
+
+  next() {
+    if (this.currentStep < this.steps.length - 1) {
+      this.currentStep++;
+      this.render();
+    } else {
+      this.finish();
+    }
+  }
+
+  back() {
+    if (this.currentStep > 1) { // Cannot go back to language selector step 0
+      this.currentStep--;
+      // Close sidebar if we go back from spotlight to static slides
+      if (this.steps[this.currentStep].type !== 'spotlight' && window.innerWidth <= 768) {
+        closeSidebar();
+      }
+      this.render();
+    }
+  }
+
+  finish() {
+    this.overlay.classList.add('hidden');
+    closeSidebar();
+    localStorage.setItem('nurai_tutorial_completed', 'true');
+  }
+}
+
+const tutorialManager = new OnboardingTutorialManager();
+
+
 // Initial
+loadChatFromLocalStorage();
 applyTranslations(currentLang);
 // ensure composer height
 messageInput.dispatchEvent(new Event('input'));
+
+// Trigger tutorial on first visit
+tutorialManager.start();
+
 
