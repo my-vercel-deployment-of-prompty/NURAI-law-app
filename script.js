@@ -1564,8 +1564,23 @@ class OnboardingTutorialManager {
       this.card.style.top = topVal + 'px';
       this.card.style.left = leftVal + 'px';
     } else {
-      // Mobile - reset inline position to fall back to media query stylesheet rules
-      this.card.removeAttribute('style');
+      // Mobile - position card at top or bottom depending on spotlight element location to prevent overlap
+      const targetCenterY = rect.top + rect.height / 2;
+      this.card.style.position = 'fixed';
+      this.card.style.left = '16px';
+      this.card.style.right = '16px';
+      this.card.style.width = 'calc(100% - 32px)';
+      this.card.style.maxWidth = 'none';
+      
+      if (targetCenterY > window.innerHeight / 2) {
+        // Target is in the bottom half of the screen, place card at the top
+        this.card.style.top = '20px';
+        this.card.style.bottom = 'auto';
+      } else {
+        // Target is in the top half of the screen, place card at the bottom
+        this.card.style.bottom = '20px';
+        this.card.style.top = 'auto';
+      }
     }
   }
 

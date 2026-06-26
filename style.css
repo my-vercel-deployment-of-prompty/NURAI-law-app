@@ -893,14 +893,63 @@ textarea.input-field { min-height: 120px; resize: vertical; }
 
 /* Custom responsive adjustment for tutorial cards */
 @media (max-width: 600px) {
+    .tutorial-card {
+        padding: 20px 16px !important;
+        gap: 16px !important;
+    }
+    
     .tutorial-card.floating {
+        /* JS will position top or bottom dynamically */
         position: fixed !important;
-        bottom: 20px !important;
-        top: auto !important;
-        left: 5% !important;
-        right: 5% !important;
-        width: 90% !important;
+        width: calc(100% - 32px) !important;
+        left: 16px !important;
+        right: 16px !important;
         max-width: none !important;
+    }
+
+    .tutorial-title {
+        font-size: 1.2rem !important;
+    }
+
+    .tutorial-desc {
+        font-size: 0.86rem !important;
+        line-height: 1.5 !important;
+    }
+
+    .tutorial-problem-item {
+        padding: 10px 12px !important;
+        gap: 10px !important;
+    }
+
+    .tutorial-problem-icon {
+        font-size: 1.15rem !important;
+    }
+
+    .tutorial-problem-text {
+        font-size: 0.84rem !important;
+    }
+
+    .tutorial-footer {
+        margin-top: 8px !important;
+        padding-top: 14px !important;
+    }
+
+    .tutorial-footer button {
+        font-size: 0.8rem !important;
+        padding: 8px 14px !important;
+    }
+
+    .tutorial-controls {
+        gap: 8px !important;
+    }
+
+    .tutorial-dots {
+        gap: 5px !important;
+    }
+
+    .tutorial-dot {
+        width: 6px !important;
+        height: 6px !important;
     }
 }
 
