@@ -19,7 +19,7 @@ const WEBHOOK_URL = "https://careers-version-hospitality-companies.trycloudflare
 
 const i18n = {
   ar: {
-    appTitle: "المساعد القانوني الذكي",
+    appTitle: "ألمستشار القانوني",
     statusText: "متصل",
     startIntake: "بدء استشارة / معالج",
     clearChat: "مسح المحادثة / جديد",
@@ -72,8 +72,8 @@ const i18n = {
     // Tutorial Translation Keys
     tutorialLangTitle: "اختر لغتك المفضلة / Select Language",
     tutorialLangSub: "يرجى تحديد لغة العرض للمساعد القانوني والتوجيه التعليمي / Please select your preferred language",
-    tutorialWelcomeTitle: "مرحباً بك في مساعدك القانوني",
-    tutorialWelcomeDesc: "نحن فريق Aether، نقدم لك منصة NURARI لتبسيط الإجراءات القانونية، صياغة وتحليل العقود، وتسهيل الفهم القانوني للجميع.",
+    tutorialWelcomeTitle: "مرحباً بك في ألمستشار القانوني",
+    tutorialWelcomeDesc: "ألمستشار القانوني يساعدك على تبسيط الإجراءات القانونية، صياغة وتحليل العقود، وتسهيل الفهم القانوني للجميع.",
     tutorialProblemTitle: "التحديات العقيمة في المجال القانوني",
     tutorialProblemDesc: "نعالج أهم العقبات القانونية التي يواجهها المجتمع اليوم:<br>• التكلفة الباهظة للاستشارات القانونية.<br>• شح وصعوبة الوصول للبيانات القانونية الموثوقة.<br>• المخاطر والثغرات التي يقع فيها الأجانب وغير الناطقين بالعربية.",
     tutorialTourTitle: "جولة سريعة في المنصة",
@@ -87,7 +87,7 @@ const i18n = {
     tutorialBtnDone: "ابدأ الآن"
   },
   en: {
-    appTitle: "AI Legal Assistant",
+    appTitle: "Legal Assistant",
     statusText: "Connected",
     startIntake: "Start Intake / Advisor",
     clearChat: "Clear Chat / New",
@@ -131,8 +131,8 @@ const i18n = {
     // Tutorial Translation Keys
     tutorialLangTitle: "Select Language / اختر لغتك المفضلة",
     tutorialLangSub: "Please select your preferred language / يرجى تحديد لغة العرض",
-    tutorialWelcomeTitle: "Welcome to NURARI",
-    tutorialWelcomeDesc: "We are Team Aether. We bring you NURARI, an AI-powered assistant designed to simplify legal procedures, analyze contracts, and make legal understanding accessible to everyone.",
+    tutorialWelcomeTitle: "Welcome to Legal Assistant",
+    tutorialWelcomeDesc: "Legal Assistant is an AI-powered tool designed to simplify legal procedures, analyze contracts, and make legal understanding accessible to everyone.",
     tutorialProblemTitle: "Critical Legal Challenges We Solve",
     tutorialProblemDesc: "We address the most prominent legal obstacles in today's society:<br>• Skyrocketing costs of professional legal consultation.<br>• Severe lack of structured and open legal data.<br>• High legal risks for foreigners and non-Arabic speakers.",
     tutorialTourTitle: "Quick Platform Tour",
@@ -281,6 +281,7 @@ function applyTranslations(lang) {
   const t = i18n[lang];
 
   document.getElementById('app-title').textContent = t.appTitle;
+  document.title = t.appTitle;
   document.getElementById('status-text').textContent = t.statusText;
   langToggleBtn.textContent = t.langBtn ?? (lang === 'ar' ? 'English' : 'عربي');
 
