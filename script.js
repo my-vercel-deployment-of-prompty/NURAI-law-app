@@ -1,22 +1,78 @@
 /**
  * AI Legal Assistant - Web client
- * Fix: script.js was corrupted (duplicate code blocks / broken comment markers), which prevented sending messages.
- * This version contains a single, consistent implementation.
+ * Enhanced UI: skeleton loading, typewriter, decorative shapes, gradient borders,
+ * timestamps, send animation, toasts, ripple, illustration, transitions, gradient headings,
+ * hover lift, dark mode.
  */
 
-// Use a publicly reachable backend URL on Vercel. Example:
-// const WEBHOOK_URL = 'https://YOUR_BACKEND_DOMAIN/webhook/affc9aac-955a-4858-a671-006aed3be42a';
-// If you deployed a Vercel proxy route, point to it instead:
-// const WEBHOOK_URL = 'https://nurai-law-app.vercel.app/api/webhook/affc9aac-955a-4858-a671-006aed3be42a';
-// TODO: Replace with your real backend/webhook URL.
-// Example (direct webhook):
-// const WEBHOOK_URL = 'https://YOUR_BACKEND_DOMAIN/webhook/affc9aac-955a-4858-a671-006aed3be42a';
-// Example (Vercel proxy route):
-// const WEBHOOK_URL = 'https://nurai-law-app.vercel.app/api/webhook/affc9aac-955a-4858-a671-006aed3be42a';
 const WEBHOOK_URL = "https://careers-version-hospitality-companies.trycloudflare.com/webhook/affc9aac-955a-4858-a671-006aed3be42a";
 
+// ============================================================
+// TOAST NOTIFICATION SYSTEM (replaces alert())
+// ============================================================
+function showToast(message, type = 'info', duration = 3000) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
 
+  const icons = { info: 'ℹ️', error: '❌', success: '✅', warning: '⚠️' };
+  toast.innerHTML = `<span class="toast-icon">${icons[type] || icons.info}</span><span>${message}</span>`;
 
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('toast-exit');
+    toast.addEventListener('animationend', () => toast.remove());
+  }, duration);
+}
+
+// ============================================================
+// RIPPLE EFFECT
+// ============================================================
+function addRipple(e) {
+  const btn = e.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const x = e.clientX - rect.left - size / 2;
+  const y = e.clientY - rect.top - size / 2;
+
+  const ripple = document.createElement('span');
+  ripple.className = 'ripple-effect';
+  ripple.style.width = ripple.style.height = size + 'px';
+  ripple.style.left = x + 'px';
+  ripple.style.top = y + 'px';
+
+  btn.appendChild(ripple);
+  ripple.addEventListener('animationend', () => ripple.remove());
+}
+
+function initRipples() {
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-primary, .btn-secondary, .suggestion-chip, .interactive-btn, .tutorial-lang-btn');
+    if (btn) addRipple(e);
+  });
+}
+
+// ============================================================
+// DARK MODE
+// ============================================================
+function initThemeToggle() {
+  const saved = localStorage.getItem('nurai_theme');
+  document.documentElement.setAttribute('data-theme', saved || 'light');
+
+  document.getElementById('theme-toggle').onclick = function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('nurai_theme', next);
+  };
+}
+
+// ============================================================
+// i18n
+// ============================================================
 const i18n = {
   ar: {
     appTitle: "ألمستشار القانوني",
@@ -24,7 +80,7 @@ const i18n = {
     startIntake: "بدء استشارة / معالج",
     clearChat: "مسح المحادثة / جديد",
     docsTitle: "المستندات",
-    dropText: "اسحب وأفلت ملف PDF/TXT أو انقر للرفع",
+    dropText: "اسحب وأفلت ملف PDF/DOCX/TXT أو انقر للرفع",
     statsTitle: "إحصائيات الجلسة",
     msgsLabel: "الأسئلة المطروحة:",
     disclaimerTitle: "تنبيه:",
@@ -41,7 +97,6 @@ const i18n = {
       "هل يمكن للشخص أن يوصي بأكثر من ثلث تركته؟",
       "ما هي شروط أهلية الموصي والموصى له؟"
     ],
-
     wizardTitle: "المستشار القانوني المبدئي",
     wizardStep1Title: "اختر صفتك",
     wizardRoleOpt0: "-- اختر الصفة --",
@@ -55,27 +110,25 @@ const i18n = {
     wizardBack: "السابق",
     wizardNext: "التالي",
     wizardSubmit: "إرسال الاستشارة",
-
     composerPlaceholder: "اكتب سؤالك هنا... (Shift+Enter لسطر جديد)",
-
     sourcesTitle: "المصادر المرجعية",
     viewSources: "عرض المصادر",
-
     stepText: (current, total) => `الخطوة ${current} من ${total}`,
-
     errorMsg: "عذراً، حدث خطأ أثناء الاتصال بالخادم. يرجى المحاولة مرة أخرى.",
     emptyResponse: "تمت معالجة الطلب ولكن لم يتم استلام نص للإجابة.",
-
     intakeReportTitle: "تقرير تقييم الاستشارة:\n\n",
     submittedIntake: (r, d, o) => `نموذج استشارة مرسل:\nالصفة: ${r}\nالتفاصيل: ${d}\nالنتيجة المرجوة: ${o}`,
-    
-    // Tutorial Translation Keys
+    selectRole: 'الرجاء اختيار صفتك.',
+    provideDetails: 'الرجاء كتابة تفاصيل الواقعة.',
+    provideOutcome: 'الرجاء كتابة النتيجة المرجوة.',
+    confirmClear: 'هل أنت متأكد من مسح المحادثة بالكامل؟',
+    chatCleared: 'تم مسح المحادثة بنجاح.',
     tutorialLangTitle: "اختر لغتك المفضلة / Select Language",
     tutorialLangSub: "يرجى تحديد لغة العرض للمساعد القانوني والتوجيه التعليمي / Please select your preferred language",
     tutorialWelcomeTitle: "مرحباً بك في ألمستشار القانوني",
     tutorialWelcomeDesc: "ألمستشار القانوني يساعدك على تبسيط الإجراءات القانونية، صياغة وتحليل العقود، وتسهيل الفهم القانوني للجميع.",
     tutorialProblemTitle: "التحديات العقيمة في المجال القانوني",
-    tutorialProblemDesc: "نعالج أهم العقبات القانونية التي يواجهها المجتمع اليوم:<br>• التكلفة الباهظة للاستشارات القانونية.<br>• شح وصعوبة الوصول للبيانات القانونية الموثوقة.<br>• المخاطر والثغرات التي يقع فيها الأجانب وغير الناطقين بالعربية.",
+    tutorialProblemDesc: "نعالج أهم العقبات القانونية التي يواجهها المجتمع اليوم.",
     tutorialTourTitle: "جولة سريعة في المنصة",
     tutorialTourIntake: "معالج الاستشارة: ابدأ استشارة قانونية مهيكلة بخطوات بسيطة.",
     tutorialTourUpload: "تحميل المستندات: ارفع ملفات PDF أو TXT لتدقيقها وتحليلها.",
@@ -92,7 +145,7 @@ const i18n = {
     startIntake: "Start Intake / Advisor",
     clearChat: "Clear Chat / New",
     docsTitle: "Documents",
-    dropText: "Drag & drop PDF/TXT or click to upload",
+    dropText: "Drag & drop PDF/DOCX/TXT or click to upload",
     statsTitle: "Session Stats",
     msgsLabel: "Questions Asked:",
     disclaimerTitle: "Disclaimer:",
@@ -100,7 +153,6 @@ const i18n = {
     emptyTitle: "How can I assist you today?",
     emptySub: "I can help analyze legal documents, draft responses, or answer queries.",
     suggestions: ["Summarize attached document", "What are my tenant rights?", "Draft a basic NDA", "Explain breach of contract"],
-
     wizardTitle: "Initial Legal Advisor",
     wizardStep1Title: "Select your role",
     wizardRoleOpt0: "-- Choose Role --",
@@ -114,27 +166,25 @@ const i18n = {
     wizardBack: "Back",
     wizardNext: "Next",
     wizardSubmit: "Submit Intake",
-
     composerPlaceholder: "Type your question here... (Shift+Enter for newline)",
-
     sourcesTitle: "Reference Sources",
     viewSources: "View Sources",
-
     stepText: (current, total) => `Step ${current} of ${total}`,
-
     errorMsg: "Sorry, an error occurred connecting to the server. Please try again.",
     emptyResponse: "Request processed but no text response received.",
-
     intakeReportTitle: "Intake Evaluation Report:\n\n",
     submittedIntake: (r, d, o) => `Submitted Intake Form:\nRole: ${r}\nDetails: ${d}\nOutcome: ${o}`,
-
-    // Tutorial Translation Keys
+    selectRole: 'Please select your role.',
+    provideDetails: 'Please provide incident details.',
+    provideOutcome: 'Please provide the desired outcome.',
+    confirmClear: 'Are you sure you want to clear the entire chat history?',
+    chatCleared: 'Chat history cleared.',
     tutorialLangTitle: "Select Language / اختر لغتك المفضلة",
     tutorialLangSub: "Please select your preferred language / يرجى تحديد لغة العرض",
     tutorialWelcomeTitle: "Welcome to Legal Assistant",
     tutorialWelcomeDesc: "Legal Assistant is an AI-powered tool designed to simplify legal procedures, analyze contracts, and make legal understanding accessible to everyone.",
     tutorialProblemTitle: "Critical Legal Challenges We Solve",
-    tutorialProblemDesc: "We address the most prominent legal obstacles in today's society:<br>• Skyrocketing costs of professional legal consultation.<br>• Severe lack of structured and open legal data.<br>• High legal risks for foreigners and non-Arabic speakers.",
+    tutorialProblemDesc: "We address the most prominent legal obstacles in today's society.",
     tutorialTourTitle: "Quick Platform Tour",
     tutorialTourIntake: "Intake Wizard: Initiate a structured legal intake session in easy steps.",
     tutorialTourUpload: "Document Upload: Drop PDF or TXT files here to analyze and extract information.",
@@ -147,11 +197,11 @@ const i18n = {
   }
 };
 
-// --- DOM ---
+// ============================================================
+// DOM
+// ============================================================
 const htmlRoot = document.getElementById('html-root');
 const langToggleBtn = document.getElementById('lang-toggle');
-
-// Hamburger menu
 const hamburgerBtn = document.getElementById('hamburger-btn');
 const sidebar = document.querySelector('.sidebar');
 const sidebarOverlay = document.getElementById('sidebar-overlay');
@@ -160,7 +210,6 @@ function toggleSidebar() {
   const isOpen = sidebar.classList.toggle('open');
   hamburgerBtn.classList.toggle('active', isOpen);
   sidebarOverlay.classList.toggle('active', isOpen);
-  // Prevent body scroll when sidebar open
   document.body.style.overflow = isOpen ? 'hidden' : '';
 }
 
@@ -179,15 +228,12 @@ const sendBtn = document.getElementById('send-btn');
 const chatThread = document.getElementById('chat-thread');
 const emptyState = document.getElementById('empty-state');
 const statMsgs = document.getElementById('stat-msgs');
-
 const sourcesPanel = document.getElementById('sources-panel');
 const closeSourcesBtn = document.getElementById('close-sources');
 const sourcesContent = document.getElementById('sources-content');
-
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('file-input');
 const fileList = document.getElementById('file-list');
-
 const startIntakeBtn = document.getElementById('start-intake-btn');
 const clearChatBtn = document.getElementById('clear-chat-btn');
 const wizardCard = document.getElementById('intake-wizard');
@@ -206,24 +252,24 @@ const wizardRole = document.getElementById('wizard-role');
 const wizardDetails = document.getElementById('wizard-details');
 const wizardOutcome = document.getElementById('wizard-outcome');
 
-// --- State ---
+// ============================================================
+// STATE
+// ============================================================
 let messageCount = 0;
 let isWaitingForResponse = false;
 let currentWizardStep = 0;
 let uploadedFile = null;
 let currentSources = [];
 let currentLang = 'ar';
-let chatHistory = []; // Array of { role: 'user'|'assistant', text: string, sources: Array, isIntakeReport: boolean }
+let chatHistory = [];
 
-// --- Utils ---
+// ============================================================
+// UTILS
+// ============================================================
 function escapeHTML(str) {
   if (str === undefined || str === null) return '';
   return String(str).replace(/[&<>'"]/g, (ch) => ({
-    '&': '&amp;',
-    '<': '<',
-    '>': '>',
-    "'": '&#39;',
-    '"': '"'
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
   }[ch]));
 }
 
@@ -236,6 +282,12 @@ function scrollToBottom() {
   chatThread.scrollTop = chatThread.scrollHeight;
 }
 
+function getTimestamp() {
+  return new Date().toLocaleTimeString(currentLang === 'ar' ? 'ar-SA' : 'en-US', {
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+
 function extractAnswer(data) {
   if (Array.isArray(data)) {
     return data.map(item => {
@@ -243,48 +295,39 @@ function extractAnswer(data) {
       return item.output || item.response || item.answer || item.text || item.message || JSON.stringify(item);
     }).join('\n\n');
   }
-
   if (typeof data === 'object' && data !== null) {
     const text = data.output || data.response || data.answer || data.text || data.message;
     if (text) return text;
     return JSON.stringify(data, null, 2);
   }
-
   return String(data);
 }
 
-// --- i18n ---
-let suggestionSetStartIndex = -4; // so first render picks a random set of 4
+// ============================================================
+// i18n APPLY
+// ============================================================
+let suggestionSetStartIndex = -4;
 
 function renderSuggestionChips() {
   const t = i18n[currentLang];
   const chips = document.querySelectorAll('.suggestion-chip');
-  const setSize = chips.length; // should be 4
-
-  // Show a random 4-set every page refresh.
   const all = (t.suggestions || []).filter(Boolean);
   if (suggestionSetStartIndex < 0) {
-    // choose a set start aligned to 4
     const maxStart = Math.max(0, all.length - chips.length);
     const sets = Math.floor(maxStart / chips.length) + 1;
-    const randomSet = Math.floor(Math.random() * sets);
-    suggestionSetStartIndex = randomSet * chips.length;
+    suggestionSetStartIndex = Math.floor(Math.random() * sets) * chips.length;
   }
-
   for (let i = 0; i < chips.length; i++) {
-    const idx = suggestionSetStartIndex + i;
-    chips[i].textContent = t.suggestions[idx] ?? '';
+    chips[i].textContent = t.suggestions[suggestionSetStartIndex + i] ?? '';
   }
 }
 
 function applyTranslations(lang) {
   const t = i18n[lang];
-
   document.getElementById('app-title').textContent = t.appTitle;
   document.title = t.appTitle;
   document.getElementById('status-text').textContent = t.statusText;
   langToggleBtn.textContent = t.langBtn ?? (lang === 'ar' ? 'English' : 'عربي');
-
   document.getElementById('start-intake-btn').textContent = t.startIntake;
   document.getElementById('clear-chat-btn').textContent = t.clearChat;
   document.getElementById('docs-title').textContent = t.docsTitle;
@@ -293,14 +336,9 @@ function applyTranslations(lang) {
   document.getElementById('msgs-label').textContent = t.msgsLabel;
   document.getElementById('disclaimer-title').textContent = t.disclaimerTitle;
   document.getElementById('disclaimer-text').textContent = t.disclaimerText;
-
   document.getElementById('empty-title').textContent = t.emptyTitle;
   document.getElementById('empty-sub').textContent = t.emptySub;
-
-  // Don’t render all suggestions at once; render 4 at a time (dynamic set)
   renderSuggestionChips();
-
-
   document.getElementById('wizard-title').textContent = t.wizardTitle;
   document.getElementById('wizard-step1-title').textContent = t.wizardStep1Title;
   document.getElementById('wizard-role-opt0').textContent = t.wizardRoleOpt0;
@@ -311,17 +349,12 @@ function applyTranslations(lang) {
   document.getElementById('wizard-details').placeholder = t.wizardDetailsPlaceholder;
   document.getElementById('wizard-step3-title').textContent = t.wizardStep3Title;
   document.getElementById('wizard-outcome').placeholder = t.wizardOutcomePlaceholder;
-
   wizardBackBtn.textContent = t.wizardBack;
   wizardNextBtn.textContent = t.wizardNext;
   wizardSubmitBtn.textContent = t.wizardSubmit;
-
   messageInput.placeholder = t.composerPlaceholder;
-
   document.getElementById('sources-title').textContent = t.sourcesTitle;
-
   wizardStepText.textContent = t.stepText(currentWizardStep + 1, wizardSteps.length);
-
   document.querySelectorAll('.toggle-sources-btn').forEach(btn => {
     btn.textContent = `📚 ${t.viewSources}`;
   });
@@ -334,25 +367,24 @@ langToggleBtn.addEventListener('click', () => {
   applyTranslations(currentLang);
 });
 
-// --- Suggestions ---
+// ============================================================
+// SUGGESTIONS
+// ============================================================
 document.querySelectorAll('.suggestion-chip').forEach(chip => {
   chip.addEventListener('click', () => {
     messageInput.value = chip.textContent;
     messageInput.dispatchEvent(new Event('input'));
-
-    // move to next set of 4 after each click
     suggestionSetStartIndex += 4;
     const t = i18n[currentLang];
-    if (suggestionSetStartIndex >= (t.suggestions?.length || 0)) {
-      suggestionSetStartIndex = 0;
-    }
+    if (suggestionSetStartIndex >= (t.suggestions?.length || 0)) suggestionSetStartIndex = 0;
     renderSuggestionChips();
-
     handleSend();
   });
 });
 
-// --- Composer input ---
+// ============================================================
+// COMPOSER
+// ============================================================
 messageInput.addEventListener('input', () => {
   messageInput.style.height = 'auto';
   messageInput.style.height = Math.min(messageInput.scrollHeight, 150) + 'px';
@@ -366,12 +398,11 @@ messageInput.addEventListener('keydown', (e) => {
   }
 });
 
-// --- Upload ---
+// ============================================================
+// FILE UPLOAD
+// ============================================================
 dropZone.addEventListener('click', () => fileInput.click());
-dropZone.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  dropZone.classList.add('dragover');
-});
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop', (e) => {
   e.preventDefault();
@@ -383,34 +414,81 @@ fileInput.addEventListener('change', () => {
   if (fileInput.files.length) handleFile(fileInput.files[0]);
 });
 
-function handleFile(file) {
-  if (file.type !== 'application/pdf' && file.type !== 'text/plain') {
-    alert('Only PDF and TXT files are supported.');
+async function handleFile(file) {
+  const allowedTypes = ['application/pdf', 'text/plain',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!allowedTypes.includes(file.type) && !['pdf','txt','docx'].includes(ext)) {
+    showToast(currentLang === 'ar' ? 'يُسمح فقط بملفات PDF و DOCX و TXT.' : 'Only PDF, DOCX and TXT files are supported.', 'warning');
+    return;
+  }
+  if (file.size > 25 * 1024 * 1024) {
+    showToast(currentLang === 'ar' ? 'حجم الملف كبير جداً (الحد الأقصى 25MB).' : 'File too large (max 25MB).', 'warning');
     return;
   }
 
-  uploadedFile = {
-    name: file.name,
-    type: file.type,
-    size: file.size,
-    lastModified: file.lastModified
-  };
-
+  uploadedFile = { name: file.name, type: file.type, size: file.size, extractedText: null };
   renderFileList();
   fileInput.value = '';
+  showToast(currentLang === 'ar' ? `جاري قراءة ${file.name}...` : `Reading ${file.name}...`, 'info', 3000);
+
+  try {
+    let text = '';
+    if (ext === 'txt' || file.type === 'text/plain') {
+      text = await file.text();
+    } else if (ext === 'pdf' || file.type === 'application/pdf') {
+      text = await extractPdfText(file);
+    } else if (ext === 'docx') {
+      text = await extractDocxText(file);
+    }
+
+    if (!text || text.trim().length < 10) {
+      showToast(currentLang === 'ar' ? 'لم يتم استخراج نص من الملف. قد يكون ممسوحاً ضوئياً.' : 'No text extracted. File may be scanned/image-based.', 'warning', 5000);
+      uploadedFile.extractedText = '';
+    } else {
+      uploadedFile.extractedText = text.trim();
+      const charCount = uploadedFile.extractedText.length;
+      const pageEstimate = Math.ceil(charCount / 2000);
+      showToast(
+        currentLang === 'ar'
+          ? `تم قراءة ${file.name} (~${pageEstimate} صفحة)`
+          : `Read ${file.name} (~${pageEstimate} pages)`,
+        'success', 3000
+      );
+    }
+  } catch (err) {
+    console.error('File extraction error:', err);
+    showToast(currentLang === 'ar' ? 'خطأ في قراءة الملف.' : 'Error reading file.', 'error');
+    uploadedFile.extractedText = '';
+  }
   saveChatToLocalStorage();
+}
+
+async function extractPdfText(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const pageText = content.items.map(item => item.str).join(' ');
+    if (pageText.trim()) pages.push(pageText);
+  }
+  return pages.join('\n\n');
+}
+
+async function extractDocxText(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const result = await mammoth.extractRawText({ arrayBuffer });
+  return result.value;
 }
 
 function renderFileList() {
   fileList.innerHTML = '';
   if (!uploadedFile) return;
-
   const chip = document.createElement('div');
   chip.className = 'file-chip glass-card';
-  chip.innerHTML = `
-    <span>📄 ${escapeHTML(uploadedFile.name)}</span>
-    <button type="button" onclick="removeFile()">✕</button>
-  `;
+  chip.innerHTML = `<span>📄 ${escapeHTML(uploadedFile.name)}</span><button type="button" onclick="removeFile()">✕</button>`;
   fileList.appendChild(chip);
 }
 
@@ -420,15 +498,14 @@ window.removeFile = function () {
   saveChatToLocalStorage();
 };
 
-// --- Sources panel ---
-closeSourcesBtn.addEventListener('click', () => {
-  sourcesPanel.classList.add('hidden');
-});
+// ============================================================
+// SOURCES PANEL
+// ============================================================
+closeSourcesBtn.addEventListener('click', () => sourcesPanel.classList.add('hidden'));
 
 function addSourcesToggle(msgId, sources = currentSources) {
   const bubble = document.getElementById(msgId)?.querySelector('.bubble');
   if (!bubble) return;
-
   const toggleBtn = document.createElement('button');
   toggleBtn.type = 'button';
   toggleBtn.className = 'btn-secondary toggle-sources-btn';
@@ -451,52 +528,34 @@ function renderSourcesPanel(sources) {
     `;
     sourcesContent.appendChild(card);
   });
-
   sourcesPanel.classList.remove('hidden');
 }
 
-// --- Interactive elements ({{ or <<input:...>> style) ---
-// Minimal implementation to support basic turn into inputs/choices rendered by the backend.
-// It scans assistant message text for markers like: <<input:id=demo_name|type=text|placeholder=...|label=...|required=1>>
-// and turns them into real HTML inputs.
-
+// ============================================================
+// INTERACTIVE ELEMENTS
+// ============================================================
 function parseInteractiveMarkers(rawText) {
   if (rawText === undefined || rawText === null) return { text: '', elements: [] };
-
   let text = String(rawText);
   const elements = [];
-
-  // Include leading spaces/newlines in case backend inserts formatting
   const markerRegex = /<<([a-zA-Z]+):([^>]+)>>/g;
-
   let match;
   while ((match = markerRegex.exec(text)) !== null) {
     const type = match[1].toLowerCase();
     const paramsStr = match[2];
     const params = {};
-
     paramsStr.split('|').forEach(pair => {
       const [k, v] = pair.split('=');
       if (!k) return;
       params[k.trim().toLowerCase()] = v ? v.trim() : '';
     });
-
     elements.push({ type, params });
   }
-
-  // Remove markers from text
   text = text.replace(markerRegex, '').trim();
-
   return { text, elements };
 }
 
-let currentInteractiveSession = {
-  active: false,
-  // key -> value
-  values: {},
-  // map param.id -> DOM element
-  elements: {},
-};
+let currentInteractiveSession = { active: false, values: {}, elements: {} };
 
 function getInputValueFromDOM() {
   const values = {};
@@ -504,7 +563,6 @@ function getInputValueFromDOM() {
     if (!el) continue;
     if (el.tagName === 'INPUT') {
       if (el.type === 'checkbox' || el.type === 'radio') {
-        // For choice inputs we store value only when checked
         if (el.checked) values[key] = el.value;
       } else {
         values[key] = el.value;
@@ -521,121 +579,82 @@ function renderInteractiveElement(el) {
   if (type === 'input') {
     const id = params.id || ('input_' + Math.random().toString(16).slice(2));
     const inputType = (params.type || 'text').toLowerCase();
-
     const wrapper = document.createElement('div');
     wrapper.className = 'interactive-form-card glass-card';
-
     const label = document.createElement('div');
     label.className = 'interactive-label';
     label.textContent = params.label || '';
-
     const input = document.createElement('input');
     input.className = 'interactive-field';
     input.id = id;
     input.type = inputType;
-
-    // Make input text visible on dark background
-    input.style.color = '#f8fafc';
-    input.style.caretColor = '#f8fafc';
-    input.style.background = 'rgba(0,0,0,0.3)';
-
     if (params.placeholder) input.placeholder = params.placeholder;
     if (params.required === '1' || params.required === 'true') input.required = true;
-
-    // Track value
     currentInteractiveSession.elements[params.id || id] = input;
     input.addEventListener('input', () => {
-      const v = {};
-      v[params.id || id] = input.value;
-      currentInteractiveSession.values = { ...currentInteractiveSession.values, ...v };
+      currentInteractiveSession.values[params.id || id] = input.value;
     });
-
     wrapper.appendChild(label);
     wrapper.appendChild(input);
     return wrapper;
   }
 
-
   if (type === 'choices') {
     const container = document.createElement('div');
     container.className = 'interactive-form-card glass-card';
-
     const label = document.createElement('div');
     label.className = 'interactive-label';
     label.textContent = params.label || '';
     container.appendChild(label);
-
     const options = (params.options || '').split(';').map(s => s.trim()).filter(Boolean);
     const groupName = params.id || ('choices_' + Math.random().toString(16).slice(2));
-
     const choicesWrap = document.createElement('div');
     choicesWrap.className = 'interactive-choices';
-
-    // single vs multi
     const mode = (params.mode || 'single').toLowerCase();
-
     options.forEach((opt, idx) => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'interactive-btn';
       btn.textContent = opt;
-      btn.style.color = '#f8fafc';
-      btn.style.background = 'rgba(255,255,255,0.05)';
-
-
       const input = document.createElement('input');
       input.type = mode === 'single' ? 'radio' : 'checkbox';
       input.name = groupName;
       input.value = opt;
       input.style.display = 'none';
       input.id = groupName + '_' + idx;
-
       btn.addEventListener('click', () => {
         input.checked = !input.checked;
-        // For single: uncheck others
         if (mode === 'single') {
           container.querySelectorAll('input[name="' + groupName + '"]').forEach(r => {
             if (r !== input) r.checked = false;
           });
         }
-        // update UI state
         container.querySelectorAll('.interactive-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
       });
-
-      // When input changes (if user clicks native)
-      input.addEventListener('change', () => {
-        btn.classList.toggle('selected', input.checked);
-      });
-
+      input.addEventListener('change', () => btn.classList.toggle('selected', input.checked));
       choicesWrap.appendChild(input);
       choicesWrap.appendChild(btn);
     });
-
     container.appendChild(choicesWrap);
     return container;
   }
 
   if (type === 'flow') {
-    // Basic support: show a disabled card describing current step
     const wrapper = document.createElement('div');
     wrapper.className = 'interactive-form-card glass-card';
-
     const label = document.createElement('div');
     label.className = 'interactive-label';
     label.textContent = params.label || 'Flow';
     wrapper.appendChild(label);
-
     const step = params.step ? params.step : '';
     const stepText = document.createElement('div');
     stepText.className = 'source-snippet';
     stepText.textContent = step ? ('Step: ' + step) : '';
     wrapper.appendChild(stepText);
-
     return wrapper;
   }
 
-  // Unknown
   const fallback = document.createElement('div');
   fallback.className = 'source-snippet';
   fallback.textContent = `Unsupported interactive: ${type}`;
@@ -645,32 +664,19 @@ function renderInteractiveElement(el) {
 function formatAssistantText(raw) {
   if (raw === undefined || raw === null) return '';
   let text = String(raw);
-
-  // Convert escaped newlines
   text = text.replace(/\\n/g, '\n');
-
-  // Escape HTML first (prevents XSS)
   text = escapeHTML(text);
-
-  // Convert **bold** and remove the asterisks
-  // After escapeHTML, '*' remains '*' so regex still works.
   text = text.replace(/\*\*(.+?)\*\*/g, '<strong class="ai-strong">$1</strong>');
-
-  // Convert real newlines to <br>
   text = text.replace(/\n/g, '<br>');
-
   return text;
 }
 
 function renderAssistantContent(rawText, parentBubble) {
   const { text, elements } = parseInteractiveMarkers(rawText);
-
-  // Reset interactive session for this assistant message
   currentInteractiveSession.active = elements.length > 0;
   currentInteractiveSession.values = {};
   currentInteractiveSession.elements = {};
 
-  // Base text
   if (text) {
     const content = document.createElement('div');
     content.className = 'bubble-text';
@@ -681,32 +687,56 @@ function renderAssistantContent(rawText, parentBubble) {
   if (elements.length) {
     const wrap = document.createElement('div');
     wrap.className = 'interactive-container';
-
-    elements.forEach(el => {
-      wrap.appendChild(renderInteractiveElement(el));
-    });
-
-    // Add a submit button under AI-rendered interactive inputs
+    elements.forEach(el => wrap.appendChild(renderInteractiveElement(el)));
     const buttonWrap = document.createElement('div');
     buttonWrap.className = 'interactive-form-controls form-controls-wrapper';
-
     const submitBtn = document.createElement('button');
     submitBtn.type = 'button';
     submitBtn.className = 'interactive-submit-btn btn-primary master-submit';
-    submitBtn.textContent = (i18n[currentLang]?.wizardSubmit) ? i18n[currentLang].wizardSubmit : (currentLang === 'ar' ? 'إرسال' : 'Submit');
-
-    submitBtn.addEventListener('click', () => {
-      submitActiveInteractiveForm();
-    });
-
+    submitBtn.textContent = (i18n[currentLang]?.wizardSubmit) || (currentLang === 'ar' ? 'إرسال' : 'Submit');
+    submitBtn.addEventListener('click', () => submitActiveInteractiveForm());
     buttonWrap.appendChild(submitBtn);
     wrap.appendChild(buttonWrap);
-
     parentBubble.appendChild(wrap);
   }
 }
 
+// ============================================================
+// TYPEWRITER EFFECT
+// ============================================================
+function typewriterEffect(element, html, callback) {
+  const temp = document.createElement('div');
+  temp.innerHTML = html;
+  const fullText = temp.textContent || temp.innerText;
 
+  element.textContent = '';
+  const cursor = document.createElement('span');
+  cursor.className = 'typewriter-cursor';
+  element.appendChild(cursor);
+
+  let i = 0;
+  const speed = 12;
+
+  function type() {
+    if (i < fullText.length) {
+      const chunk = fullText.substring(0, i + 1);
+      element.textContent = chunk;
+      element.appendChild(cursor);
+      i++;
+      scrollToBottom();
+      setTimeout(type, speed);
+    } else {
+      cursor.remove();
+      element.innerHTML = html;
+      if (callback) callback();
+    }
+  }
+  type();
+}
+
+// ============================================================
+// MESSAGE RENDERING
+// ============================================================
 function renderUserMessage(text, shouldSave = true) {
   if (shouldSave) {
     updateMessageCount();
@@ -714,27 +744,29 @@ function renderUserMessage(text, shouldSave = true) {
     saveChatToLocalStorage();
   }
   const id = 'msg-' + Date.now();
-
   const msgDiv = document.createElement('div');
   msgDiv.className = 'message user';
   msgDiv.id = id;
+
+  const timestamp = getTimestamp();
   msgDiv.innerHTML = `
     <div class="avatar">U</div>
-    <div class="bubble">${escapeHTML(text)}</div>
+    <div>
+      <div class="bubble">${escapeHTML(text)}</div>
+      <div class="msg-timestamp">${timestamp}</div>
+    </div>
   `;
-
   chatThread.appendChild(msgDiv);
   return id;
 }
 
-function renderAssistantMessage(text, shouldSave = true, sources = null) {
+function renderAssistantMessage(text, shouldSave = true, sources = null, useTypewriter = false) {
   if (shouldSave) {
     updateMessageCount();
     chatHistory.push({ role: 'assistant', text, sources });
     saveChatToLocalStorage();
   }
   const id = 'msg-' + Date.now();
-
   const msgDiv = document.createElement('div');
   msgDiv.className = 'message assistant';
   msgDiv.id = id;
@@ -743,18 +775,58 @@ function renderAssistantMessage(text, shouldSave = true, sources = null) {
   avatar.className = 'avatar';
   avatar.textContent = '⚖️';
 
+  const wrapper = document.createElement('div');
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
 
-  // Render plain text + interactive markers
-  renderAssistantContent(text, bubble);
+  const timestamp = document.createElement('div');
+  timestamp.className = 'msg-timestamp';
+  timestamp.textContent = getTimestamp();
 
+  if (useTypewriter) {
+    const { text: cleanText, elements } = parseInteractiveMarkers(text);
+    currentInteractiveSession.active = elements.length > 0;
+    currentInteractiveSession.values = {};
+    currentInteractiveSession.elements = {};
+
+    if (cleanText) {
+      const content = document.createElement('div');
+      content.className = 'bubble-text';
+      bubble.appendChild(content);
+      const formattedHTML = formatAssistantText(cleanText);
+      typewriterEffect(content, formattedHTML, () => {
+        if (elements.length) {
+          const wrap = document.createElement('div');
+          wrap.className = 'interactive-container';
+          elements.forEach(el => wrap.appendChild(renderInteractiveElement(el)));
+          const buttonWrap = document.createElement('div');
+          buttonWrap.className = 'interactive-form-controls form-controls-wrapper';
+          const submitBtn = document.createElement('button');
+          submitBtn.type = 'button';
+          submitBtn.className = 'interactive-submit-btn btn-primary master-submit';
+          submitBtn.textContent = (i18n[currentLang]?.wizardSubmit) || 'Submit';
+          submitBtn.addEventListener('click', () => submitActiveInteractiveForm());
+          buttonWrap.appendChild(submitBtn);
+          wrap.appendChild(buttonWrap);
+          bubble.appendChild(wrap);
+        }
+      });
+    }
+  } else {
+    renderAssistantContent(text, bubble);
+  }
+
+  wrapper.appendChild(bubble);
+  wrapper.appendChild(timestamp);
   msgDiv.appendChild(avatar);
-  msgDiv.appendChild(bubble);
+  msgDiv.appendChild(wrapper);
   chatThread.appendChild(msgDiv);
   return id;
 }
 
+// ============================================================
+// SKELETON SHIMMER LOADING
+// ============================================================
 function renderLoading() {
   const id = 'loading-' + Date.now();
   const msgDiv = document.createElement('div');
@@ -763,8 +835,11 @@ function renderLoading() {
   msgDiv.innerHTML = `
     <div class="avatar">⚖️</div>
     <div class="bubble">
-      <div class="typing-indicator">
-        <span></span><span></span><span></span>
+      <div class="skeleton-loader">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
       </div>
     </div>
   `;
@@ -777,78 +852,80 @@ function renderError() {
   errDiv.className = 'error-card glass-card';
   errDiv.textContent = i18n[currentLang].errorMsg;
   chatThread.appendChild(errDiv);
+  showToast(i18n[currentLang].errorMsg, 'error');
 }
 
-// --- Webhook ---
+// ============================================================
+// SEND BUTTON ANIMATION
+// ============================================================
+function setSendingState(sending) {
+  if (sending) {
+    sendBtn.classList.add('sending');
+  } else {
+    sendBtn.classList.remove('sending');
+  }
+}
+
+// ============================================================
+// WEBHOOK
+// ============================================================
 async function callWebhook(payload) {
   const res = await fetch(WEBHOOK_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
-
   if (!res.ok) throw new Error('Network error');
-
   const contentType = res.headers.get('content-type');
-  if (contentType && contentType.includes('application/json')) {
-    return await res.json();
-  }
+  if (contentType && contentType.includes('application/json')) return await res.json();
   return await res.text();
 }
 
-// --- Send ---
+// ============================================================
+// SEND HANDLER
+// ============================================================
 sendBtn.addEventListener('click', handleSend);
 
 function hasActiveInteractiveFlow() {
-  // active when last assistant message contained markers
   return currentInteractiveSession.active;
 }
 
 function buildInteractiveSubmissionPrompt(userText) {
   const values = getInputValueFromDOM();
   const extras = [];
-  if (Object.keys(values).length) {
-    extras.push('interactive_values=' + JSON.stringify(values));
-  }
+  if (Object.keys(values).length) extras.push('interactive_values=' + JSON.stringify(values));
   if (userText) extras.push('user_text=' + userText);
   return extras.length ? extras.join('\n') : userText;
 }
 
 function formatInteractiveValuesForUser(values) {
   if (!values || typeof values !== 'object') return '';
-
   const entries = Object.entries(values);
   if (!entries.length) return '';
-
-  // Keep it readable and “user-like”: "primary_legal_query: sgs"
-  // and join multi values on one line.
-  return entries
-    .map(([k, v]) => `${k}: ${v}`)
-    .join('\n');
+  return entries.map(([k, v]) => `${k}: ${v}`).join('\n');
 }
 
-async function submitActiveInteractiveForm() {
-  // Submits active <<input>>/<<choices>>/<<flow>> values to the AI
-  if (!hasActiveInteractiveFlow()) return;
-  if (isWaitingForResponse) return;
-
-  // build payload text (must include interactive_values=...)
-  const composed = buildInteractiveSubmissionPrompt('');
-  if (!composed || composed.trim() === '') return;
-
-  // show a cleaned version to the user (do not show "interactive_values=...")
-  const values = getInputValueFromDOM();
-  const userVisibleText = formatInteractiveValuesForUser(values);
-
+// Smooth transition: show chat, hide empty
+function showChatView() {
   emptyState.classList.add('hidden');
   chatThread.classList.remove('hidden');
   wizardCard.classList.add('hidden');
+}
 
+async function submitActiveInteractiveForm() {
+  if (!hasActiveInteractiveFlow()) return;
+  if (isWaitingForResponse) return;
+  const composed = buildInteractiveSubmissionPrompt('');
+  if (!composed || composed.trim() === '') return;
+  const values = getInputValueFromDOM();
+  const userVisibleText = formatInteractiveValuesForUser(values);
+
+  showChatView();
   renderUserMessage(userVisibleText || 'تم إرسال الخيارات/المدخلات.');
-
   messageInput.value = '';
   messageInput.style.height = 'auto';
   sendBtn.disabled = true;
+  setSendingState(true);
 
   const loadingId = renderLoading();
   scrollToBottom();
@@ -856,30 +933,23 @@ async function submitActiveInteractiveForm() {
 
   try {
     const payload = { message: composed };
-    if (uploadedFile) {
-      payload.document = uploadedFile.name;
-      payload.file = uploadedFile;
-    }
-
+    if (uploadedFile && uploadedFile.extractedText) { payload.document = uploadedFile.name; payload.documentText = uploadedFile.extractedText; }
     const responseData = await callWebhook(payload);
     document.getElementById(loadingId)?.remove();
 
     if (typeof responseData === 'object') {
       const answerText = extractAnswer(responseData);
-      const msgId = renderAssistantMessage(answerText, true, responseData.sources || null);
-
-      if (responseData.sources?.length) {
-        currentSources = responseData.sources;
-        addSourcesToggle(msgId);
-      }
+      const msgId = renderAssistantMessage(answerText, true, responseData.sources || null, true);
+      if (responseData.sources?.length) { currentSources = responseData.sources; addSourcesToggle(msgId); }
     } else {
-      renderAssistantMessage(responseData, true);
+      renderAssistantMessage(responseData, true, null, true);
     }
   } catch (err) {
     document.getElementById(loadingId)?.remove();
     renderError();
   } finally {
     isWaitingForResponse = false;
+    setSendingState(false);
     sendBtn.disabled = messageInput.value.trim() === '';
     scrollToBottom();
   }
@@ -889,20 +959,15 @@ async function handleSend() {
   const text = messageInput.value.trim();
   if (isWaitingForResponse) return;
 
-  // If we have an active interactive form, submit its values regardless of textarea content
   if (hasActiveInteractiveFlow()) {
     const composed = buildInteractiveSubmissionPrompt(text);
     if (!composed || composed.trim() === '') return;
-
-    // Send composed prompt
-    emptyState.classList.add('hidden');
-    chatThread.classList.remove('hidden');
-    wizardCard.classList.add('hidden');
-
+    showChatView();
     renderUserMessage(composed);
     messageInput.value = '';
     messageInput.style.height = 'auto';
     sendBtn.disabled = true;
+    setSendingState(true);
 
     const loadingId = renderLoading();
     scrollToBottom();
@@ -910,52 +975,36 @@ async function handleSend() {
 
     try {
       const payload = { message: composed };
-      if (uploadedFile) {
-        payload.document = uploadedFile.name;
-        payload.file = uploadedFile;
-      }
-
+      if (uploadedFile && uploadedFile.extractedText) { payload.document = uploadedFile.name; payload.documentText = uploadedFile.extractedText; }
       const responseData = await callWebhook(payload);
       document.getElementById(loadingId)?.remove();
 
       if (typeof responseData === 'object') {
         const answerText = extractAnswer(responseData);
-        const msgId = renderAssistantMessage(answerText, true, responseData.sources || null);
-
-        // If assistant response contains interactive markers, activate again
-        // (done in renderAssistantContent)
-        if (responseData.sources?.length) {
-          currentSources = responseData.sources;
-          addSourcesToggle(msgId);
-        }
+        const msgId = renderAssistantMessage(answerText, true, responseData.sources || null, true);
+        if (responseData.sources?.length) { currentSources = responseData.sources; addSourcesToggle(msgId); }
       } else {
-        renderAssistantMessage(responseData, true);
+        renderAssistantMessage(responseData, true, null, true);
       }
     } catch (err) {
       document.getElementById(loadingId)?.remove();
       renderError();
     } finally {
       isWaitingForResponse = false;
+      setSendingState(false);
       sendBtn.disabled = messageInput.value.trim() === '';
       scrollToBottom();
     }
-
     return;
   }
 
-  // Normal mode
   if (!text) return;
-
-
-  emptyState.classList.add('hidden');
-  chatThread.classList.remove('hidden');
-  wizardCard.classList.add('hidden');
-
+  showChatView();
   renderUserMessage(text);
-
   messageInput.value = '';
   messageInput.style.height = 'auto';
   sendBtn.disabled = true;
+  setSendingState(true);
 
   const loadingId = renderLoading();
   scrollToBottom();
@@ -963,10 +1012,7 @@ async function handleSend() {
 
   try {
     const payload = { message: text };
-    if (uploadedFile) {
-      payload.document = uploadedFile.name;
-      payload.file = uploadedFile;
-    }
+    if (uploadedFile && uploadedFile.extractedText) { payload.document = uploadedFile.name; payload.documentText = uploadedFile.extractedText; }
 
     if (text.toLowerCase() === 'demo') {
       const demoResponse = {
@@ -978,16 +1024,11 @@ async function handleSend() {
         ],
         sources: [{ id: 'DemoDoc', page: 1, snippet: 'هذا مقتطف تجريبي من المصدر لعرض اللوحة الجانبية.' }]
       };
-
       document.getElementById(loadingId)?.remove();
       const answerText = extractAnswer(demoResponse);
-      const msgId = renderAssistantMessage(answerText, true, demoResponse.sources || null);
-
-      if (demoResponse.sources?.length) {
-        currentSources = demoResponse.sources;
-        addSourcesToggle(msgId);
-      }
-
+      const msgId = renderAssistantMessage(answerText, true, demoResponse.sources || null, true);
+      if (demoResponse.sources?.length) { currentSources = demoResponse.sources; addSourcesToggle(msgId); }
+      setSendingState(false);
       return;
     }
 
@@ -996,42 +1037,31 @@ async function handleSend() {
 
     if (typeof responseData === 'object') {
       const answerText = extractAnswer(responseData);
-      const msgId = renderAssistantMessage(answerText, true, responseData.sources || null);
-
-      if (responseData.sources?.length) {
-        currentSources = responseData.sources;
-        addSourcesToggle(msgId);
-      }
+      const msgId = renderAssistantMessage(answerText, true, responseData.sources || null, true);
+      if (responseData.sources?.length) { currentSources = responseData.sources; addSourcesToggle(msgId); }
     } else {
-      renderAssistantMessage(responseData, true);
+      renderAssistantMessage(responseData, true, null, true);
     }
-
   } catch (err) {
     document.getElementById(loadingId)?.remove();
     renderError();
   } finally {
     isWaitingForResponse = false;
+    setSendingState(false);
     sendBtn.disabled = messageInput.value.trim() === '';
     scrollToBottom();
   }
 }
 
-// --- Intake wizard ---
+// ============================================================
+// INTAKE WIZARD
+// ============================================================
 startIntakeBtn.addEventListener('click', startWizard);
 closeWizardBtn.addEventListener('click', () => wizardCard.classList.add('hidden'));
-
 wizardNextBtn.addEventListener('click', () => {
-  if (validateWizardStep(currentWizardStep)) {
-    currentWizardStep++;
-    renderWizardStep();
-  }
+  if (validateWizardStep(currentWizardStep)) { currentWizardStep++; renderWizardStep(); }
 });
-
-wizardBackBtn.addEventListener('click', () => {
-  currentWizardStep--;
-  renderWizardStep();
-});
-
+wizardBackBtn.addEventListener('click', () => { currentWizardStep--; renderWizardStep(); });
 wizardSubmitBtn.addEventListener('click', submitWizard);
 
 function startWizard() {
@@ -1039,179 +1069,143 @@ function startWizard() {
   emptyState.classList.add('hidden');
   chatThread.classList.remove('hidden');
   wizardCard.classList.remove('hidden');
-
   currentWizardStep = 0;
   wizardRole.value = '';
   wizardDetails.value = '';
   wizardOutcome.value = '';
-
   renderWizardStep();
   scrollToBottom();
 }
 
 function validateWizardStep(stepIndex) {
+  const t = i18n[currentLang];
   if (stepIndex === 0 && !wizardRole.value) {
-    alert(currentLang === 'ar' ? 'الرجاء اختيار صفتك.' : 'Please select your role.');
+    showToast(t.selectRole, 'warning');
     return false;
   }
   if (stepIndex === 1 && !wizardDetails.value.trim()) {
-    alert(currentLang === 'ar' ? 'الرجاء كتابة تفاصيل الواقعة.' : 'Please provide incident details.');
+    showToast(t.provideDetails, 'warning');
     return false;
   }
   if (stepIndex === 2 && !wizardOutcome.value.trim()) {
-    alert(currentLang === 'ar' ? 'الرجاء كتابة النتيجة المرجوة.' : 'Please provide the desired outcome.');
+    showToast(t.provideOutcome, 'warning');
     return false;
   }
   return true;
 }
 
 function renderWizardStep() {
-  wizardSteps.forEach((stepEl, idx) => {
-    stepEl.classList.toggle('active', idx === currentWizardStep);
-  });
-
+  wizardSteps.forEach((stepEl, idx) => stepEl.classList.toggle('active', idx === currentWizardStep));
   wizardStepText.textContent = i18n[currentLang].stepText(currentWizardStep + 1, wizardSteps.length);
-
   wizardProgressFill.style.width = `${((currentWizardStep + 1) / wizardSteps.length) * 100}%`;
-
   wizardBackBtn.classList.toggle('hidden', currentWizardStep === 0);
   wizardNextBtn.classList.toggle('hidden', currentWizardStep === wizardSteps.length - 1);
   wizardSubmitBtn.classList.toggle('hidden', currentWizardStep !== wizardSteps.length - 1);
-
   scrollToBottom();
 }
 
 async function submitWizard() {
   if (!validateWizardStep(currentWizardStep)) return;
-
   const wizardData = {
     role: wizardRole.options[wizardRole.selectedIndex].text,
     details: wizardDetails.value,
     outcome: wizardOutcome.value
   };
-
   wizardCard.classList.add('hidden');
-
   const userText = i18n[currentLang].submittedIntake(wizardData.role, wizardData.details, wizardData.outcome);
   renderUserMessage(userText);
-
+  setSendingState(true);
   const loadingId = renderLoading();
   scrollToBottom();
   isWaitingForResponse = true;
 
   try {
-    const payload = {
-      message: 'Analyze this intake form: ' + JSON.stringify(wizardData)
-    };
-
-    if (uploadedFile) {
-      payload.document = uploadedFile.name;
-      payload.file = uploadedFile;
-    }
-
+    const payload = { message: 'Analyze this intake form: ' + JSON.stringify(wizardData) };
+    if (uploadedFile && uploadedFile.extractedText) { payload.document = uploadedFile.name; payload.documentText = uploadedFile.extractedText; }
     const responseData = await callWebhook(payload);
     document.getElementById(loadingId)?.remove();
-
     if (typeof responseData === 'object') {
       const answerText = extractAnswer(responseData);
-      renderAssistantMessage(i18n[currentLang].intakeReportTitle + answerText, true, responseData.sources || null);
+      renderAssistantMessage(i18n[currentLang].intakeReportTitle + answerText, true, responseData.sources || null, true);
     } else {
-      renderAssistantMessage(i18n[currentLang].intakeReportTitle + responseData, true);
+      renderAssistantMessage(i18n[currentLang].intakeReportTitle + responseData, true, null, true);
     }
-
   } catch (err) {
     document.getElementById(loadingId)?.remove();
     renderError();
   } finally {
     isWaitingForResponse = false;
+    setSendingState(false);
     scrollToBottom();
   }
 }
 
-// Local Storage Functions
+// ============================================================
+// LOCAL STORAGE
+// ============================================================
 function saveChatToLocalStorage() {
   try {
-    const data = {
-      chatHistory,
-      messageCount,
-      uploadedFile,
-      currentLang
-    };
-    localStorage.setItem('nurai_legal_assistant_session', JSON.stringify(data));
-  } catch (e) {
-    console.error('Failed to save session to localStorage', e);
-  }
+    const fileMetadata = uploadedFile
+      ? { name: uploadedFile.name, type: uploadedFile.type, size: uploadedFile.size, hasText: !!uploadedFile.extractedText }
+      : null;
+    localStorage.setItem('nurai_legal_assistant_session', JSON.stringify({
+      chatHistory, messageCount, uploadedFile: fileMetadata, currentLang
+    }));
+  } catch (e) { /* silent */ }
 }
 
 function loadChatFromLocalStorage() {
   try {
     const serialized = localStorage.getItem('nurai_legal_assistant_session');
     if (!serialized) return;
-
     const data = JSON.parse(serialized);
     if (!data) return;
-
     if (data.currentLang) {
       currentLang = data.currentLang;
       htmlRoot.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
       htmlRoot.setAttribute('lang', currentLang);
     }
-
-    if (data.uploadedFile) {
-      uploadedFile = data.uploadedFile;
-      renderFileList();
-    }
-
-    if (typeof data.messageCount === 'number') {
-      messageCount = data.messageCount;
-      statMsgs.textContent = messageCount;
-    }
-
+    if (data.uploadedFile) { uploadedFile = data.uploadedFile; renderFileList(); }
+    if (typeof data.messageCount === 'number') { messageCount = data.messageCount; statMsgs.textContent = messageCount; }
     if (Array.isArray(data.chatHistory) && data.chatHistory.length > 0) {
       emptyState.classList.add('hidden');
       chatThread.classList.remove('hidden');
       chatHistory = data.chatHistory;
-
       data.chatHistory.forEach(msg => {
         if (msg.role === 'user') {
           renderUserMessage(msg.text, false);
         } else {
           const msgId = renderAssistantMessage(msg.text, false);
-          if (msg.sources && msg.sources.length > 0) {
-            addSourcesToggle(msgId, msg.sources);
-          }
+          if (msg.sources && msg.sources.length > 0) addSourcesToggle(msgId, msg.sources);
         }
       });
       scrollToBottom();
     }
-  } catch (e) {
-    console.error('Failed to load session from localStorage', e);
-  }
+  } catch (e) { /* silent */ }
 }
 
 clearChatBtn.addEventListener('click', () => {
-  const confirmMsg = currentLang === 'ar' 
-    ? 'هل أنت متأكد من مسح المحادثة بالكامل؟' 
-    : 'Are you sure you want to clear the entire chat history?';
-    
-  if (confirm(confirmMsg)) {
+  const t = i18n[currentLang];
+  showToast(t.confirmClear, 'warning', 4000);
+
+  if (confirm(t.confirmClear)) {
     localStorage.removeItem('nurai_legal_assistant_session');
     chatHistory = [];
     messageCount = 0;
     statMsgs.textContent = '0';
     uploadedFile = null;
     renderFileList();
-    
     chatThread.innerHTML = '';
     chatThread.classList.add('hidden');
     emptyState.classList.remove('hidden');
     wizardCard.classList.add('hidden');
+    showToast(t.chatCleared, 'success', 2000);
   }
 });
 
-// ==========================================================================
-// Interactive Onboarding Tutorial Manager (Team Aether)
-// ==========================================================================
+// ============================================================
+// TUTORIAL
+// ============================================================
 class OnboardingTutorialManager {
   constructor() {
     this.currentStep = 0;
@@ -1225,51 +1219,16 @@ class OnboardingTutorialManager {
     this.nextBtn = document.getElementById('tutorial-next');
     this.closeBtn = document.getElementById('tutorial-close');
     this.dotsContainer = document.getElementById('tutorial-dots');
-    
-    this.steps = [
-      {
-        type: 'language',
-        titleKey: 'tutorialLangTitle',
-        subKey: 'tutorialLangSub'
-      },
-      {
-        type: 'intro',
-        titleKey: 'tutorialWelcomeTitle',
-        descKey: 'tutorialWelcomeDesc',
-        icon: '⚖️'
-      },
-      {
-        type: 'problems',
-        titleKey: 'tutorialProblemTitle',
-        descKey: 'tutorialProblemDesc',
-        icon: '🚨'
-      },
-      {
-        type: 'spotlight',
-        targetId: 'start-intake-btn',
-        titleKey: 'wizardTitle',
-        descKey: 'tutorialTourIntake'
-      },
-      {
-        type: 'spotlight',
-        targetId: 'drop-zone',
-        titleKey: 'docsTitle',
-        descKey: 'tutorialTourUpload'
-      },
-      {
-        type: 'spotlight',
-        targetClass: 'composer-area',
-        titleKey: 'emptyTitle',
-        descKey: 'tutorialTourComposer'
-      },
-      {
-        type: 'spotlight',
-        targetId: 'lang-toggle',
-        titleKey: 'tutorialTourTitle',
-        descKey: 'tutorialTourLang'
-      }
-    ];
 
+    this.steps = [
+      { type: 'language', titleKey: 'tutorialLangTitle', subKey: 'tutorialLangSub' },
+      { type: 'intro', titleKey: 'tutorialWelcomeTitle', descKey: 'tutorialWelcomeDesc', icon: '⚖️' },
+      { type: 'problems', titleKey: 'tutorialProblemTitle', descKey: 'tutorialProblemDesc', icon: '🚨' },
+      { type: 'spotlight', targetId: 'start-intake-btn', titleKey: 'wizardTitle', descKey: 'tutorialTourIntake' },
+      { type: 'spotlight', targetId: 'drop-zone', titleKey: 'docsTitle', descKey: 'tutorialTourUpload' },
+      { type: 'spotlight', targetClass: 'composer-area', titleKey: 'emptyTitle', descKey: 'tutorialTourComposer' },
+      { type: 'spotlight', targetId: 'lang-toggle', titleKey: 'tutorialTourTitle', descKey: 'tutorialTourLang' }
+    ];
     this.initEvents();
   }
 
@@ -1278,30 +1237,17 @@ class OnboardingTutorialManager {
     this.backBtn.addEventListener('click', () => this.back());
     this.skipBtn.addEventListener('click', () => this.finish());
     this.closeBtn.addEventListener('click', () => this.finish());
-    
-    // Recalculate spotlight and floating card positions on window resize/scroll
     window.addEventListener('resize', () => {
-      if (this.overlay && !this.overlay.classList.contains('hidden')) {
-        this.updateLayout();
-      }
+      if (this.overlay && !this.overlay.classList.contains('hidden')) this.updateLayout();
     });
-
     window.addEventListener('scroll', () => {
-      if (this.overlay && !this.overlay.classList.contains('hidden')) {
-        this.updateLayout();
-      }
+      if (this.overlay && !this.overlay.classList.contains('hidden')) this.updateLayout();
     });
   }
 
   start() {
-    // If user already visited, don't show
-    if (localStorage.getItem('nurai_tutorial_completed')) {
-      return;
-    }
-    
-    // Clear sidebar open states to prevent overlay bugs
+    if (localStorage.getItem('nurai_tutorial_completed')) return;
     closeSidebar();
-    
     this.currentStep = 0;
     this.overlay.classList.remove('hidden');
     this.render();
@@ -1310,17 +1256,12 @@ class OnboardingTutorialManager {
   render() {
     const step = this.steps[this.currentStep];
     const t = i18n[currentLang];
-
-    // Clear previous dynamic content
     this.content.innerHTML = '';
 
-    // Step type: Language Selector
     if (step.type === 'language') {
       this.spotlight.classList.add('hidden');
       this.card.classList.remove('floating');
       this.card.removeAttribute('style');
-      
-      // Hide standard navigation buttons
       this.skipBtn.style.display = 'none';
       this.backBtn.style.display = 'none';
       this.nextBtn.style.display = 'none';
@@ -1329,12 +1270,10 @@ class OnboardingTutorialManager {
       const title = document.createElement('h3');
       title.className = 'tutorial-title';
       title.innerText = t.tutorialLangTitle || step.titleKey;
-
       const desc = document.createElement('p');
       desc.className = 'tutorial-desc';
       desc.style.textAlign = 'center';
       desc.innerText = t.tutorialLangSub || step.subKey;
-
       const btnContainer = document.createElement('div');
       btnContainer.className = 'tutorial-lang-container';
 
@@ -1348,7 +1287,6 @@ class OnboardingTutorialManager {
         applyTranslations('ar');
         this.next();
       });
-
       const btnEn = document.createElement('button');
       btnEn.className = 'tutorial-lang-btn';
       btnEn.innerText = 'English';
@@ -1362,11 +1300,9 @@ class OnboardingTutorialManager {
 
       btnContainer.appendChild(btnAr);
       btnContainer.appendChild(btnEn);
-      
       const brandIcon = document.createElement('div');
       brandIcon.className = 'tutorial-brand-icon';
       brandIcon.innerText = '⚖️';
-      
       this.content.appendChild(brandIcon);
       this.content.appendChild(title);
       this.content.appendChild(desc);
@@ -1376,27 +1312,22 @@ class OnboardingTutorialManager {
       this.spotlight.classList.add('hidden');
       this.card.classList.remove('floating');
       this.card.removeAttribute('style');
-
       this.skipBtn.style.display = 'block';
-      this.backBtn.style.display = 'none'; // No back to language step once decided
+      this.backBtn.style.display = 'none';
       this.nextBtn.style.display = 'block';
       this.dotsContainer.style.display = 'flex';
-
       this.skipBtn.innerText = t.tutorialBtnSkip;
       this.nextBtn.innerText = t.tutorialBtnNext;
 
       const brandIcon = document.createElement('div');
       brandIcon.className = 'tutorial-brand-icon';
       brandIcon.innerText = step.icon;
-
       const title = document.createElement('h3');
       title.className = 'tutorial-title';
       title.innerText = t[step.titleKey];
-
       const desc = document.createElement('p');
       desc.className = 'tutorial-desc';
       desc.innerText = t[step.descKey];
-
       this.content.appendChild(brandIcon);
       this.content.appendChild(title);
       this.content.appendChild(desc);
@@ -1405,12 +1336,10 @@ class OnboardingTutorialManager {
       this.spotlight.classList.add('hidden');
       this.card.classList.remove('floating');
       this.card.removeAttribute('style');
-
       this.skipBtn.style.display = 'block';
       this.backBtn.style.display = 'block';
       this.nextBtn.style.display = 'block';
       this.dotsContainer.style.display = 'flex';
-
       this.skipBtn.innerText = t.tutorialBtnSkip;
       this.backBtn.innerText = t.tutorialBtnBack;
       this.nextBtn.innerText = t.tutorialBtnNext;
@@ -1418,11 +1347,8 @@ class OnboardingTutorialManager {
       const title = document.createElement('h3');
       title.className = 'tutorial-title';
       title.innerText = t[step.titleKey];
-
       const listContainer = document.createElement('div');
       listContainer.className = 'tutorial-problems-list';
-
-      // Problems detail list
       const problems = currentLang === 'ar' ? [
         { icon: '💰', text: 'التكلفة الباهظة للاستشارات القانونية التقليدية التي تعوق الكثيرين.' },
         { icon: '📊', text: 'شح البيانات وصعوبة الوصول إلى التشريعات والأحكام القانونية الموثوقة.' },
@@ -1432,28 +1358,15 @@ class OnboardingTutorialManager {
         { icon: '📊', text: 'Severe lack of structured and easily accessible legal data.' },
         { icon: '🌍', text: 'High legal risks for foreigners and non-Arabic speakers.' }
       ];
-
       problems.forEach(p => {
         const item = document.createElement('div');
         item.className = 'tutorial-problem-item';
-        
-        const iconSpan = document.createElement('span');
-        iconSpan.className = 'tutorial-problem-icon';
-        iconSpan.innerText = p.icon;
-
-        const textSpan = document.createElement('span');
-        textSpan.className = 'tutorial-problem-text';
-        textSpan.innerText = p.text;
-
-        item.appendChild(iconSpan);
-        item.appendChild(textSpan);
+        item.innerHTML = `<span class="tutorial-problem-icon">${p.icon}</span><span class="tutorial-problem-text">${p.text}</span>`;
         listContainer.appendChild(item);
       });
-
       const brandIcon = document.createElement('div');
       brandIcon.className = 'tutorial-brand-icon';
       brandIcon.innerText = step.icon;
-
       this.content.appendChild(brandIcon);
       this.content.appendChild(title);
       this.content.appendChild(listContainer);
@@ -1463,7 +1376,6 @@ class OnboardingTutorialManager {
       this.backBtn.style.display = 'block';
       this.nextBtn.style.display = 'block';
       this.dotsContainer.style.display = 'flex';
-
       this.skipBtn.innerText = t.tutorialBtnSkip;
       this.backBtn.innerText = t.tutorialBtnBack;
       this.nextBtn.innerText = (this.currentStep === this.steps.length - 1) ? t.tutorialBtnDone : t.tutorialBtnNext;
@@ -1471,28 +1383,21 @@ class OnboardingTutorialManager {
       const title = document.createElement('h3');
       title.className = 'tutorial-title';
       title.innerText = t[step.titleKey];
-
       const desc = document.createElement('p');
       desc.className = 'tutorial-desc';
       desc.innerText = t[step.descKey];
-
       this.content.appendChild(title);
       this.content.appendChild(desc);
-
       this.spotlight.classList.remove('hidden');
       this.card.classList.add('floating');
-      
       this.updateLayout();
     }
-
     this.renderDots();
   }
 
   renderDots() {
     this.dotsContainer.innerHTML = '';
-    // Skip step 0 (language select) in the dot count
     if (this.currentStep === 0) return;
-    
     for (let i = 1; i < this.steps.length; i++) {
       const dot = document.createElement('div');
       dot.className = `tutorial-dot ${i === this.currentStep ? 'active' : ''}`;
@@ -1504,81 +1409,53 @@ class OnboardingTutorialManager {
     if (this.currentStep === 0) return;
     const step = this.steps[this.currentStep];
     if (step.type !== 'spotlight') return;
-
     let target = null;
-    if (step.targetId) {
-      target = document.getElementById(step.targetId);
-    } else if (step.targetClass) {
-      target = document.querySelector('.' + step.targetClass);
-    }
+    if (step.targetId) target = document.getElementById(step.targetId);
+    else if (step.targetClass) target = document.querySelector('.' + step.targetClass);
 
     if (!target) {
-      // Fallback to center if element not found
       this.spotlight.classList.add('hidden');
       this.card.classList.remove('floating');
       this.card.removeAttribute('style');
       return;
     }
 
-    // If sidebar is hidden (e.g. mobile) and target is inside it, make sure sidebar is temporarily open
     const isSidebarTarget = target.closest('.sidebar');
     if (isSidebarTarget && window.innerWidth <= 768) {
-      // Toggle sidebar open to show target
-      if (!sidebar.classList.contains('open')) {
-        toggleSidebar();
-      }
+      if (!sidebar.classList.contains('open')) toggleSidebar();
     }
 
     const rect = target.getBoundingClientRect();
     const padding = 8;
-
-    // Set Spotlight Dimensions
     this.spotlight.classList.remove('hidden');
     this.spotlight.style.top = (rect.top + window.scrollY - padding) + 'px';
     this.spotlight.style.left = (rect.left + window.scrollX - padding) + 'px';
     this.spotlight.style.width = (rect.width + padding * 2) + 'px';
     this.spotlight.style.height = (rect.height + padding * 2) + 'px';
 
-    // Position Card relative to target (Desktop)
     if (window.innerWidth > 600) {
       const cardWidth = 430;
       this.card.style.width = cardWidth + 'px';
       this.card.style.maxWidth = 'none';
-
-      // Decide whether to place it above, below, left, or right
       let topVal = rect.bottom + window.scrollY + 16;
       let leftVal = rect.left + window.scrollX + (rect.width - cardWidth) / 2;
-
-      // Keep it within screen boundaries
-      if (leftVal < 20) {
-        leftVal = 20;
-      } else if (leftVal + cardWidth > window.innerWidth - 20) {
-        leftVal = window.innerWidth - cardWidth - 20;
-      }
-
-      // If it overflows bottom, show it above target
+      if (leftVal < 20) leftVal = 20;
+      else if (leftVal + cardWidth > window.innerWidth - 20) leftVal = window.innerWidth - cardWidth - 20;
       const estimatedCardHeight = 220;
-      if (rect.bottom + estimatedCardHeight > window.innerHeight) {
-        topVal = rect.top + window.scrollY - estimatedCardHeight - 16;
-      }
-
+      if (rect.bottom + estimatedCardHeight > window.innerHeight) topVal = rect.top + window.scrollY - estimatedCardHeight - 16;
       this.card.style.top = topVal + 'px';
       this.card.style.left = leftVal + 'px';
     } else {
-      // Mobile - position card at top or bottom depending on spotlight element location to prevent overlap
       const targetCenterY = rect.top + rect.height / 2;
       this.card.style.position = 'fixed';
       this.card.style.left = '16px';
       this.card.style.right = '16px';
       this.card.style.width = 'calc(100% - 32px)';
       this.card.style.maxWidth = 'none';
-      
       if (targetCenterY > window.innerHeight / 2) {
-        // Target is in the bottom half of the screen, place card at the top
         this.card.style.top = '20px';
         this.card.style.bottom = 'auto';
       } else {
-        // Target is in the top half of the screen, place card at the bottom
         this.card.style.bottom = '20px';
         this.card.style.top = 'auto';
       }
@@ -1586,21 +1463,14 @@ class OnboardingTutorialManager {
   }
 
   next() {
-    if (this.currentStep < this.steps.length - 1) {
-      this.currentStep++;
-      this.render();
-    } else {
-      this.finish();
-    }
+    if (this.currentStep < this.steps.length - 1) { this.currentStep++; this.render(); }
+    else this.finish();
   }
 
   back() {
-    if (this.currentStep > 1) { // Cannot go back to language selector step 0
+    if (this.currentStep > 1) {
       this.currentStep--;
-      // Close sidebar if we go back from spotlight to static slides
-      if (this.steps[this.currentStep].type !== 'spotlight' && window.innerWidth <= 768) {
-        closeSidebar();
-      }
+      if (this.steps[this.currentStep].type !== 'spotlight' && window.innerWidth <= 768) closeSidebar();
       this.render();
     }
   }
@@ -1614,14 +1484,12 @@ class OnboardingTutorialManager {
 
 const tutorialManager = new OnboardingTutorialManager();
 
-
-// Initial
+// ============================================================
+// INIT
+// ============================================================
+initThemeToggle();
+initRipples();
 loadChatFromLocalStorage();
 applyTranslations(currentLang);
-// ensure composer height
 messageInput.dispatchEvent(new Event('input'));
-
-// Trigger tutorial on first visit
 tutorialManager.start();
-
-

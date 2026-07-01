@@ -5,9 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ألمستشار القانوني</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Decorative Background Shapes -->
+    <div class="decorative-shapes">
+        <div class="deco-shape deco-shape-1"></div>
+        <div class="deco-shape deco-shape-2"></div>
+        <div class="deco-shape deco-shape-3"></div>
+        <svg class="deco-curve" viewBox="0 0 1440 320" preserveAspectRatio="none" fill="currentColor" style="color: var(--accent);">
+            <path d="M0,224L48,213.3C96,203,192,181,288,186.7C384,192,480,224,576,229.3C672,235,768,213,864,186.7C960,160,1056,128,1152,128C1248,128,1344,160,1392,176L1440,192L1440,320L0,320Z"></path>
+        </svg>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
     <div class="app-container">
         <!-- Header -->
         <header class="app-header glass-panel">
@@ -21,6 +34,10 @@
                 </div>
             </div>
             <div class="header-actions">
+                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+                    <span class="icon-sun">☀️</span>
+                    <span class="icon-moon">🌙</span>
+                </button>
                 <button id="lang-toggle" class="btn-secondary">English</button>
                 <div class="connection-status">
                     <span class="status-dot online"></span>
@@ -37,12 +54,12 @@
                     <button id="start-intake-btn" class="btn-primary full-width">بدء استشارة / معالج</button>
                     <button id="clear-chat-btn" class="btn-secondary full-width" style="margin-top: 10px;">مسح المحادثة / جديد</button>
                 </div>
-                
+
                 <div class="sidebar-section upload-section">
                     <h3 id="docs-title">المستندات</h3>
                     <div id="drop-zone" class="drop-zone glass-card">
-                        <p id="drop-text">اسحب وأفلت ملف PDF/TXT أو انقر للرفع</p>
-                        <input type="file" id="file-input" accept=".pdf,.txt" hidden>
+                        <p id="drop-text">اسحب وأفلت ملف PDF/DOCX/TXT أو انقر للرفع</p>
+                        <input type="file" id="file-input" accept=".pdf,.txt,.docx" hidden>
                     </div>
                     <div id="file-list" class="file-list"></div>
                 </div>
@@ -50,7 +67,7 @@
                 <div class="sidebar-section">
                     <h3 id="stats-title">إحصائيات الجلسة</h3>
                     <div class="stat-box glass-card">
-                        <span id="msgs-label">الأسئلة المطروحة:</span> 
+                        <span id="msgs-label">الأسئلة المطروحة:</span>
                         <span id="stat-msgs" class="gold-text">0</span>
                     </div>
                 </div>
@@ -67,6 +84,9 @@
                 <!-- Empty State -->
                 <div id="empty-state" class="empty-state">
                     <div class="empty-state-content glass-card">
+                        <div class="empty-illustration">
+                            <img src="مخلخ.png" alt="Legal Assistant Logo">
+                        </div>
                         <h2 id="empty-title">كيف يمكنني مساعدتك اليوم؟</h2>
                         <p id="empty-sub">يمكنني تحليل المستندات القانونية، صياغة الردود، أو الإجابة على الاستفسارات.</p>
                         <div class="suggestions">
@@ -94,7 +114,6 @@
                         <span id="wizard-step-text">الخطوة 1 من 3</span>
                     </div>
                     <div class="wizard-body">
-                        <!-- Step 1 -->
                         <div class="wizard-step active" id="step-1">
                             <h4 id="wizard-step1-title">اختر صفتك</h4>
                             <select id="wizard-role" class="input-field glass-input">
@@ -104,12 +123,10 @@
                                 <option value="Witness" id="wizard-role-opt3">شاهد</option>
                             </select>
                         </div>
-                        <!-- Step 2 -->
                         <div class="wizard-step" id="step-2">
                             <h4 id="wizard-step2-title">تفاصيل الواقعة</h4>
                             <textarea id="wizard-details" class="input-field glass-input" placeholder="صف ما حدث بالتفصيل..."></textarea>
                         </div>
-                        <!-- Step 3 -->
                         <div class="wizard-step" id="step-3">
                             <h4 id="wizard-step3-title">النتيجة المرجوة</h4>
                             <textarea id="wizard-outcome" class="input-field glass-input" placeholder="ما الذي تسعى لتحقيقه؟"></textarea>
@@ -142,7 +159,6 @@
                     <button id="close-sources" class="btn-icon">✕</button>
                 </div>
                 <div id="sources-content" class="sources-content">
-                    <!-- Sources injected here -->
                 </div>
             </aside>
         </div>
@@ -152,11 +168,10 @@
     <div id="tutorial-overlay" class="tutorial-overlay hidden">
         <div id="tutorial-backdrop" class="tutorial-backdrop"></div>
         <div id="tutorial-spotlight" class="tutorial-spotlight"></div>
-        
+
         <div id="tutorial-card" class="tutorial-card glass-panel">
             <button id="tutorial-close" class="tutorial-close-btn" aria-label="Skip Tutorial">✕</button>
             <div id="tutorial-content" class="tutorial-content">
-                <!-- Content is dynamically rendered here based on active step -->
             </div>
             <div id="tutorial-footer" class="tutorial-footer">
                 <button id="tutorial-skip" class="btn-secondary">تخطي</button>
@@ -169,6 +184,9 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
